@@ -46,13 +46,15 @@ def newUser():
     return {'success': True}, 200
 
 @APP.route('/getUsers', methods=['POST'])
+@cross_origin() 
 def getUsers():
     data = cur.execute('SELECT * FROM users')
-    output = [item[0] for item in data] #returns only name
+    output = [item[2] for item in data] #returns only name
     return {'success': True, "data":output}, 200
 
 
 @APP.route('/fund', methods=['POST'])
+@cross_origin() 
 def handler_user_funding():
     '''
         Given a terra address,
