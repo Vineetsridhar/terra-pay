@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import { LCDClient, Coin } from '@terra-money/terra.js';
+import React, { useState } from "react";
+import { LCDClient, Coin, MnemonicKey } from '@terra-money/terra.js';
 import { PrimaryButton, Text } from '@fluentui/react'
 import { globalStyles } from "../../assets/styles";
 import { TextField, MaskedTextField } from '@fluentui/react/lib/TextField';
@@ -18,43 +18,49 @@ export default function CreateAccount() {
     const [name, setName] = useState<string>("")
     const [username, setUsername] = useState<string>("")
 
-    const onChangeName = (event:React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
+    const [mnemonicKey, setMnemonicKey] = useState<string>("")
+
+    const onChangeName = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
         if (newValue) {
             setName(newValue || '');
         }
     }
-    const onChangeUsername = (event:React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
+    const onChangeUsername = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
         if (newValue) {
             setUsername(newValue || '');
         }
     }
 
     const createPrivateKey = () => {
-
+        const mk = new MnemonicKey();
+        const wallet = terra.wallet(mk);
+        const m = mk.mnemonic
+        setMnemonicKey(m)
+        localStorage.setItem("address", wallet.key.accAddress);
     }
 
     const submit = async () => {
-        if(!(name && username)){
-            globalEmitter.emit("notification", {type:"error", message:"Please fill out all fields"})
+        if (!(name && username)) {
+            globalEmitter.emit("notification", { type: "error", message: "Please fill out all fields" })
             return
         }
 
-        try{
+        try {
             const isUnique = await isUsernameUnique(username);
-            if(isUnique.unique) {
-                const response = await createNewUser(username, name);
-                if(response.success) {
-                    globalEmitter.emit("notification", {type:"success", message:"User has been successfully registered"})
-                    globalEmitter.emit("notification", {type:"info", message:"Creating private wallet"})
+            if (isUnique.unique) {
+                // const response = await createNewUser(username, name);
+                const response = { success: true }
+                if (response.success) {
+                    globalEmitter.emit("notification", { type: "success", message: "User has been successfully registered" })
+                    globalEmitter.emit("notification", { type: "info", message: "Creating private wallet" })
+                    createPrivateKey()
                 }
             } else {
-                globalEmitter.emit("notification", {type:"error", message:isUnique.message || "This username has already been registered"})
+                globalEmitter.emit("notification", { type: "error", message: isUnique.message || "This username has already been registered" })
             }
-        } catch(err){
-            globalEmitter.emit("notification", {type:"error", message:"There was an error with your request"})
+        } catch (err) {
+            globalEmitter.emit("notification", { type: "error", message: "There was an error with your request" })
         }
-
-        console.log(name, username,)
     }
 
     return (
@@ -63,9 +69,18 @@ export default function CreateAccount() {
                 Create an account
             </Text>
             <TextField label="Your name" value={name} onChange={onChangeName} />
-            <TextField label="Username" value={username} onChange={onChangeUsername}/>
+            <TextField label="Username" value={username} onChange={onChangeUsername} />
 
-            <PrimaryButton onClick={submit}/>
+            {!mnemonicKey ? <PrimaryButton onClick={submit} /> : null}
+
+            {
+                mnemonicKey ?
+                    <>
+                        <p>Write down this key. You will need it to recover your account:</p>
+                        <p>{mnemonicKey}</p>
+                        <PrimaryButton>Next</PrimaryButton>
+                    </> : null
+            }
         </div>
     )
 }
