@@ -2,16 +2,22 @@ import React from "react";
 import {
   Stack,
   Text,
-  Link,
-  Label,
-  TextField,
   FontWeights,
   IStackTokens,
   PrimaryButton,
   DefaultButton,
 } from "@fluentui/react";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useRouteMatch,
+} from "react-router-dom";
 import { Separator } from "@fluentui/react/lib/Separator";
 import "./LoggedIn.css";
+import CreateAccount from "../createaccount/CreateAccount";
+import { HomePage } from "../homepage/HomePage";
 import { LCDClient, Coin } from "@terra-money/terra.js";
 import logo from "../homepage/logo.svg";
 
@@ -24,6 +30,7 @@ const terra = new LCDClient({
 });
 
 export const LoggedIn: React.FunctionComponent = () => {
+  let { path, url } = useRouteMatch();
   return (
     <Stack horizontal styles={{ root: { height: "100%" } }}>
       <Stack.Item
@@ -64,6 +71,14 @@ export const LoggedIn: React.FunctionComponent = () => {
         </Stack>
       </Stack.Item>
       <Stack.Item grow>
+        <Switch>
+          <Route path={`${path}/createAccount`}>
+            <CreateAccount />
+          </Route>
+          <Route path={`${path}/`}>
+            <HomePage />
+          </Route>
+        </Switch>
       </Stack.Item>
     </Stack>
   );
