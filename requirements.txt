@@ -1,0 +1,6 @@
+terra-sdk==0.12.0
+bech32==1.2.0
+Flask==1.1.2
+Flask-Cors==3.0.10
+requests==2.22.0
+python-dotenv==0.17.0

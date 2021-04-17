@@ -1,7 +1,11 @@
 import React from 'react';
+import {CheckoutForm} from './CheckoutForm'
+
 
 export function AddFunds() {
     return (
-        <div></div>
+        <div>
+            <CheckoutForm/>
+        </div>
     )
 }

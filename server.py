@@ -5,6 +5,8 @@
 import os
 import asyncio
 import threading
+import json
+import stripe
 from fund import fund_wallet
 from flask import Flask, send_from_directory, request
 from dotenv import load_dotenv, find_dotenv
@@ -17,6 +19,8 @@ cur = con.cursor()
 cur.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(32), username VARCHAR(32));')
 
 load_dotenv(find_dotenv())  
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
 
 APP = Flask(__name__, static_folder='./build/static')
 
@@ -67,10 +71,26 @@ def handler_user_funding():
     result = loop.run_until_complete(fund_wallet(terra_address, float(amount)))
     return {'success': True }, 200
 
+@APP.route('/payment', methods=['POST'])
+@cross_origin()
+def handle_stripe_payment():
+    data = json.loads(request.data)
+    # Create a PaymentIntent with the order amount and currency
+    intent = stripe.PaymentIntent.create(
+        amount=data['amount'],
+        currency=data['currency']
+    )
+    try:
+        # Send publishable key and PaymentIntent details to client
+        return jsonify({'publishableKey': os.getenv('STRIPE_PUBLISHABLE_KEY'), 'clientSecret': intent.client_secret})
+    except Exception as e:
+        return jsonify(error=str(e)), 403
+
+
 # Note we need to add this line so we can import app in the python shell
 if __name__ == "__main__":
     APP.run(
         host=os.getenv('IP', '0.0.0.0'),
         port=8081 if os.getenv('C9_PORT') else int(os.getenv('PORT', "8081")),
-        debug=True
+        debug=False
     )

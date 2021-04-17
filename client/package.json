@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@fluentui/react": "^7.168.0",
+    "@stripe/react-stripe-js": "^1.4.0",
+    "@stripe/stripe-js": "^1.13.2",
     "@terra-money/terra.js": "^1.7.0",
     "@testing-library/jest-dom": "^5.11.10",
     "@testing-library/react": "^11.2.6",
