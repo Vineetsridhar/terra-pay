@@ -5,6 +5,7 @@
 import os
 from flask import Flask, send_from_directory, request
 from dotenv import load_dotenv, find_dotenv
+from flask_cors import cross_origin
 import sqlite3
 
 con = sqlite3.connect('users.db', check_same_thread=False)
@@ -20,6 +21,7 @@ def make_error_block(message):
     return {"success":False,"message":message}, 400
 
 @APP.route('/isUsernameUnique', methods=['POST'])
+@cross_origin() 
 def isUsernameUnique():
     if "username" not in request.json:
         return make_error_block("Params missing")
@@ -29,7 +31,6 @@ def isUsernameUnique():
     data = cur.execute('SELECT * FROM users where username = "%s"' % username)
     output = [item for item in data]
     return {'success': True, "unique": len(output) == 0}, 200
-
 
 @APP.route('/newUser', methods=['POST'])
 def newUser():
