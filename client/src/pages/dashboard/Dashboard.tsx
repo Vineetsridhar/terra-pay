@@ -21,6 +21,7 @@ import { HomePage } from "../homepage/HomePage";
 import { LCDClient, Coin } from "@terra-money/terra.js";
 import logo from "../homepage/logo.svg";
 import {useHistory} from "react-router-dom"
+import { AddFunds } from "../addfunds/AddFunds";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
@@ -83,20 +84,22 @@ export const Dashboard: React.FunctionComponent = () => {
           </Text>
           <Separator />
 
-          <DefaultButton href="/"> Home</DefaultButton>
+          <DefaultButton href="/dashboard/addFunds">Deposit Funds</DefaultButton>
           <PrimaryButton href="/"> About </PrimaryButton>
         </Stack>
       </Stack.Item>
+
       <Stack.Item grow>
         <Switch>
-          <Route path={`${path}/createAccount`}>
-            <CreateAccount />
+          <Route path={`${path}/addFunds`}>
+            <AddFunds />
           </Route>
           <Route path={`${path}/`}>
             <HomePage />
           </Route>
         </Switch>
       </Stack.Item>
+
     </Stack>
   );
 };
