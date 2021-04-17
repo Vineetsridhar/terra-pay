@@ -11,7 +11,7 @@ import {
   DefaultButton,
 } from "@fluentui/react";
 import { Separator } from "@fluentui/react/lib/Separator";
-import "./LoggedIn.css";
+import "./ImportAccount.css";
 import { LCDClient, Coin } from "@terra-money/terra.js";
 import logo from "../homepage/logo.svg";
 
@@ -23,7 +23,7 @@ const terra = new LCDClient({
   chainID: "tequila-0004",
 });
 
-export const LoggedIn: React.FunctionComponent = () => {
+export const ImportAccount: React.FunctionComponent = () => {
   return (
     <Stack horizontal styles={{ root: { height: "100%" } }}>
       <Stack.Item
@@ -64,6 +64,10 @@ export const LoggedIn: React.FunctionComponent = () => {
         </Stack>
       </Stack.Item>
       <Stack.Item grow>
+        <Text variant="xxLarge" styles={boldStyle}>
+          Please enter your 12-word seed phrase you received when creating a terra wallet (space between words).
+        </Text>
+        <TextField label="Mnemonic" multiline rows={3} />
       </Stack.Item>
     </Stack>
   );

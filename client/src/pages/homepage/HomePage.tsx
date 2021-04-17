@@ -47,7 +47,7 @@ export const HomePage: React.FunctionComponent = () => {
         <DefaultButton onClick={() => history.push("/createAccount")}>
           Create Account
         </DefaultButton>
-        <PrimaryButton href="/loggedIn">Import Account</PrimaryButton>
+        <PrimaryButton href="/importAccount">Import Account</PrimaryButton>
       </Stack>
     </Stack>
   );
