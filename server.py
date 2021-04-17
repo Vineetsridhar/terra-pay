@@ -33,6 +33,7 @@ def isUsernameUnique():
     return {'success': True, "unique": len(output) == 0}, 200
 
 @APP.route('/newUser', methods=['POST'])
+@cross_origin() 
 def newUser():
     data = request.json
     if "name" not in data or "username" not in data:

@@ -4,7 +4,7 @@ import { PrimaryButton, Text } from '@fluentui/react'
 import { globalStyles } from "../../assets/styles";
 import { TextField, MaskedTextField } from '@fluentui/react/lib/TextField';
 import "./CreateAccount.css";
-import { isUsernameUnique } from "../../helpers/network";
+import { createNewUser, isUsernameUnique } from "../../helpers/network";
 import { globalEmitter } from "../../helpers/emitter";
 
 const terra = new LCDClient({
@@ -29,14 +29,26 @@ export default function CreateAccount() {
         }
     }
 
+    const createPrivateKey = () => {
+
+    }
+
     const submit = async () => {
+        if(!(name && username)){
+            globalEmitter.emit("notification", {type:"error", message:"Please fill out all fields"})
+            return
+        }
+
         try{
             const isUnique = await isUsernameUnique(username);
-            console.log(isUnique)
             if(isUnique.unique) {
-                globalEmitter.emit("notification", {type:"error", message:"User has been successfully registered"})
+                const response = await createNewUser(username, name);
+                if(response.success) {
+                    globalEmitter.emit("notification", {type:"success", message:"User has been successfully registered"})
+                    globalEmitter.emit("notification", {type:"info", message:"Creating private wallet"})
+                }
             } else {
-                globalEmitter.emit("notification", {type:"error", message:"That username has already been taken"})
+                globalEmitter.emit("notification", {type:"error", message:isUnique.message || "This username has already been registered"})
             }
         } catch(err){
             globalEmitter.emit("notification", {type:"error", message:"There was an error with your request"})
