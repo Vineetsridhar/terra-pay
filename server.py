@@ -59,7 +59,9 @@ def handler_user_funding():
     '''
     terra_address = request.get_json()['address']
     amount = request.get_json()['amount']
-    asyncio.run(fund_wallet(terra_address, float(amount)))
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(fund_wallet(terra_address, float(amount)))
     return {'success': True }, 200
 
 # Note we need to add this line so we can import app in the python shell

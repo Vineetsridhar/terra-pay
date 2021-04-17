@@ -54,6 +54,6 @@ async def fund_wallet(recipient, amount):
         fee=StdFee(300000, "300000uusd")
         )
         result = terra.tx.broadcast(tx)
-        print(result)
+        #print(result)
     else:
         print("Amount is greater than funding wallet balance.")
