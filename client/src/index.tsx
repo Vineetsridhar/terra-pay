@@ -4,6 +4,8 @@ import { App } from './App';
 import { mergeStyles } from '@fluentui/react';
 import reportWebVitals from './reportWebVitals';
 import Notification from './helpers/notifications';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 
 // Inject some global styles
 mergeStyles({
@@ -13,12 +15,13 @@ mergeStyles({
     height: '100vh',
   },
 });
+const stripePromise = loadStripe('pk_test_51IhI4wFiEeqrout7JsVqFVH8KT0CwcJ7sYL3x9tgs7PW37CTYpvnrdxMnVo89Payh0b9So4wHqldBxszsSJktR4E00gUFm9qqt');
 
 ReactDOM.render(
-  <React.StrictMode>
+  <Elements stripe={stripePromise}>
     <App />
     <Notification />
-  </React.StrictMode>,
+  </Elements>,
   document.getElementById('root')
 );
 
