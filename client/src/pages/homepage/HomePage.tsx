@@ -36,7 +36,7 @@ export const HomePage: React.FunctionComponent = () => {
   return (
     <Stack
       horizontalAlign="center"
-      verticalAlign="center"
+      verticalAlign="start"
       verticalFill
       styles={{
         root: {
@@ -48,31 +48,49 @@ export const HomePage: React.FunctionComponent = () => {
       }}
       tokens={stackTokens}
     >
-      <img className="App-logo" src={logo} alt="logo" />
-      <Text variant="xxLarge" styles={globalStyles.bold}>
-        Welcome to TerraPay
-      </Text>
+      <Stack.Item
+        styles={{
+          root: {
+            alignItems: "end",
+            display: "flex",
+            justifyContent: "end",
+            height: "50%",
+          },
+        }}
+      >
+        <Stack
+          horizontalAlign="center"
+          verticalAlign="end"
+          verticalFill
+          tokens={stackTokens}
+        >
+          <img className="App-logo" src={logo} alt="logo" />
+          <Text variant="xxLarge" styles={globalStyles.bold}>
+            Welcome to TerraPay
+          </Text>
 
-      <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <DefaultButton
-          onClick={() => {
-            displayedComponent == "create"
-              ? setDisplayedComponent("none")
-              : setDisplayedComponent("create");
-          }}
-        >
-          Create Account
-        </DefaultButton>
-        <PrimaryButton
-          onClick={() => {
-            displayedComponent == "import"
-              ? setDisplayedComponent("none")
-              : setDisplayedComponent("import");
-          }}
-        >
-          Import Account
-        </PrimaryButton>
-      </Stack>
+          <Stack horizontal tokens={stackTokens} horizontalAlign="center">
+            <DefaultButton
+              onClick={() => {
+                displayedComponent == "create"
+                  ? setDisplayedComponent("none")
+                  : setDisplayedComponent("create");
+              }}
+            >
+              Create Account
+            </DefaultButton>
+            <PrimaryButton
+              onClick={() => {
+                displayedComponent == "import"
+                  ? setDisplayedComponent("none")
+                  : setDisplayedComponent("import");
+              }}
+            >
+              Import Account
+            </PrimaryButton>
+          </Stack>
+        </Stack>
+      </Stack.Item>
       {displayedComponent == "create" && <CreateAccount />}
       {displayedComponent == "import" && <ImportAccount />}
     </Stack>
