@@ -10,9 +10,15 @@ import {
 } from "@fluentui/react";
 import logo from "./logo.svg";
 import "./HomePage.css";
+import { LCDClient, Coin } from '@terra-money/terra.js';
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
+
+const terra = new LCDClient({
+  URL: 'https://tequila-lcd.terra.dev/',
+  chainID: 'tequila-0004',
+});
 
 export const HomePage: React.FunctionComponent = () => {
   return (
