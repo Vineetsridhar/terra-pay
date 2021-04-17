@@ -41,6 +41,7 @@ export default function CreateAccount() {
         const m = mk.mnemonic
         setMnemonicKey(m)
         localStorage.setItem("address", wallet.key.accAddress);
+        localStorage.setItem("mnemonic", mk.mnemonic);
     }
 
     const submit = async () => {
