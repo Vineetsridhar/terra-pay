@@ -9,7 +9,7 @@ import {
   DefaultButton,
 } from "@fluentui/react";
 import logo from "./logo.svg";
-import "./HomePage.css";
+import "./LoggedIn.css";
 import { LCDClient, Coin } from "@terra-money/terra.js";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
@@ -20,7 +20,7 @@ const terra = new LCDClient({
   chainID: "tequila-0004",
 });
 
-export const HomePage: React.FunctionComponent = () => {
+export const LoggedIn: React.FunctionComponent = () => {
   return (
     <Stack
       horizontalAlign="center"
@@ -36,13 +36,12 @@ export const HomePage: React.FunctionComponent = () => {
       }}
       tokens={stackTokens}
     >
-      <img className="App-logo" src={logo} alt="logo" />
       <Text variant="xxLarge" styles={boldStyle}>
         Welcome to TerraPay
       </Text>
 
       <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <DefaultButton> Create Account</DefaultButton>
+        <DefaultButton href="/"> Create Account</DefaultButton>
         <PrimaryButton href="/loggedIn"> Import Account </PrimaryButton>
       </Stack>
     </Stack>
