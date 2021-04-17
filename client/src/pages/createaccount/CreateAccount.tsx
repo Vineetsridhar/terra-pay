@@ -27,7 +27,9 @@ export default function CreateAccount() {
     }
     const onChangeUsername = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
         if (newValue) {
-            setUsername(newValue || '');
+            setUsername(newValue);
+        } else {
+            setUsername("")
         }
     }
 
@@ -48,8 +50,7 @@ export default function CreateAccount() {
         try {
             const isUnique = await isUsernameUnique(username);
             if (isUnique.unique) {
-                // const response = await createNewUser(username, name);
-                const response = { success: true }
+                const response = await createNewUser(username, name);
                 if (response.success) {
                     globalEmitter.emit("notification", { type: "success", message: "User has been successfully registered" })
                     globalEmitter.emit("notification", { type: "info", message: "Creating private wallet" })
