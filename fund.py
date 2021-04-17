@@ -57,4 +57,3 @@ async def fund_wallet(recipient, amount):
         print(result)
     else:
         print("Amount is greater than funding wallet balance.")
-    

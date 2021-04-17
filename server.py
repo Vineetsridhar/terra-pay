@@ -3,6 +3,9 @@
     Flask Web server that handles API endpoints
 '''
 import os
+import asyncio
+import threading
+from fund import fund_wallet
 from flask import Flask, send_from_directory, request
 from dotenv import load_dotenv, find_dotenv
 import sqlite3
@@ -32,8 +35,15 @@ def getUsers():
     return {'success': True, "data":output}, 200
 
 
-@APP.route('/test', methods=['GET'])
+@APP.route('/fund', methods=['POST'])
 def handler_user_funding():
+    '''
+        Given a terra address,
+        fund a certain amount from reserve
+    '''
+    terra_address = request.get_json()['address']
+    amount = request.get_json()['amount']
+    asyncio.run(fund_wallet(terra_address, float(amount)))
     return {'success': True }, 200
 
 # Note we need to add this line so we can import app in the python shell
