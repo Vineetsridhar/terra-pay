@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Stack,
   Text,
@@ -15,11 +15,12 @@ import {
   useRouteMatch,
 } from "react-router-dom";
 import { Separator } from "@fluentui/react/lib/Separator";
-import "./LoggedIn.css";
+import "./Dashboard.css";
 import CreateAccount from "../createaccount/CreateAccount";
 import { HomePage } from "../homepage/HomePage";
 import { LCDClient, Coin } from "@terra-money/terra.js";
 import logo from "../homepage/logo.svg";
+import {useHistory} from "react-router-dom"
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
@@ -29,8 +30,24 @@ const terra = new LCDClient({
   chainID: "tequila-0004",
 });
 
-export const LoggedIn: React.FunctionComponent = () => {
+export const Dashboard: React.FunctionComponent = () => {
   let { path, url } = useRouteMatch();
+  const history = useHistory()
+  const [balance, setBalance] = useState(0);
+
+  const getBalanceData = async (address:string) => {
+    const balance = await terra.bank.balance(address)
+    console.log(address)
+  }
+
+  useEffect(() => {
+    const address = localStorage.getItem("address")
+    if(!address){
+      history.push('/')
+      return
+    }
+    getBalanceData(address)
+  }, [])
   return (
     <Stack horizontal styles={{ root: { height: "100%" } }}>
       <Stack.Item

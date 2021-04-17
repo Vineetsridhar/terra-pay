@@ -6,6 +6,7 @@ import { TextField, MaskedTextField } from '@fluentui/react/lib/TextField';
 import "./CreateAccount.css";
 import { createNewUser, isUsernameUnique } from "../../helpers/network";
 import { globalEmitter } from "../../helpers/emitter";
+import { useHistory } from "react-router-dom";
 
 const terra = new LCDClient({
     URL: 'https://tequila-lcd.terra.dev/',
@@ -14,6 +15,7 @@ const terra = new LCDClient({
 
 
 export default function CreateAccount() {
+    const history = useHistory();
 
     const [name, setName] = useState<string>("")
     const [username, setUsername] = useState<string>("")
@@ -79,7 +81,7 @@ export default function CreateAccount() {
                     <>
                         <p>Write down this key. You will need it to recover your account:</p>
                         <p>{mnemonicKey}</p>
-                        <PrimaryButton>Next</PrimaryButton>
+                        <PrimaryButton onClick={() => history.push('/dashboard')}>Next</PrimaryButton>
                     </> : null
             }
         </div>

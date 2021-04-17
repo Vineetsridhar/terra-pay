@@ -1,8 +1,7 @@
 import React from "react";
-import { FontWeights, IStackTokens } from "@fluentui/react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { HomePage } from "./pages/homepage/HomePage";
-import { LoggedIn } from "./pages/loggedIn/LoggedIn";
+import { Dashboard } from "./pages/dashboard/Dashboard";
 import "./App.css";
 import CreateAccount from "./pages/createaccount/CreateAccount";
 import { ImportAccount } from "./pages/importaccount/ImportAccount";
@@ -19,8 +18,8 @@ export const App: React.FunctionComponent = () => {
   return (
     <Router>
       <Switch>
-        <Route path="/loggedIn">
-          <LoggedIn />
+        <Route path="/dashboard">
+          <Dashboard />
         </Route>
         <Route path="/importAccount">
           <ImportAccount />

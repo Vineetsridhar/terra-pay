@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Stack,
   Text,
@@ -22,6 +22,13 @@ const terra = new LCDClient({
 
 export const HomePage: React.FunctionComponent = () => {
   const history = useHistory();
+
+  useEffect(() => {
+    const address = localStorage.getItem('address');
+    if(address){
+      history.push('/dashboard')
+    }
+  }, [])
 
   return (
     <Stack
