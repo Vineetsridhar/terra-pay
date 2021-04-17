@@ -3,6 +3,7 @@ import { FontWeights, IStackTokens } from "@fluentui/react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { HomePage } from "./pages/homepage/HomePage";
 import "./App.css";
+import CreateAccount from "./pages/createaccount/CreateAccount";
 
 function Home() {
   return <h2>Home</h2>;
@@ -20,22 +21,9 @@ export const App: React.FunctionComponent = () => {
   return (
     <Router>
       <div>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/about">About</Link>
-            </li>
-            <li>
-              <Link to="/users">Users</Link>
-            </li>
-          </ul>
-        </nav>
         <Switch>
-          <Route path="/about">
-            <About />
+          <Route path="/createAccount">
+            <CreateAccount />
           </Route>
           <Route path="/users">
             <Users />
