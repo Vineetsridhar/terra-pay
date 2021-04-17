@@ -9,10 +9,16 @@ import {
 } from "@fluentui/react";
 import logo from "./logo.svg";
 import "./HomePage.css";
-import { useHistory } from 'react-router-dom'
+import { LCDClient, Coin } from "@terra-money/terra.js";
+import { useHistory } from "react-router-dom";
 import { globalStyles } from "../../assets/styles";
 
 const stackTokens: IStackTokens = { childrenGap: 15 };
+
+const terra = new LCDClient({
+  URL: "https://tequila-lcd.terra.dev/",
+  chainID: "tequila-0004",
+});
 
 export const HomePage: React.FunctionComponent = () => {
   const history = useHistory();
@@ -38,8 +44,10 @@ export const HomePage: React.FunctionComponent = () => {
       </Text>
 
       <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <DefaultButton onClick={() => history.push('/createAccount')}>Create Account</DefaultButton>
-        <PrimaryButton>Import Account</PrimaryButton>
+        <DefaultButton onClick={() => history.push("/createAccount")}>
+          Create Account
+        </DefaultButton>
+        <PrimaryButton href="/loggedIn">Import Account</PrimaryButton>
       </Stack>
     </Stack>
   );
