@@ -37,7 +37,7 @@ export const Dashboard: React.FunctionComponent = () => {
 
   const getBalanceData = async (address:string) => {
     const balance = await terra.bank.balance(address)
-    console.log(address)
+    console.log(balance.toArray())
   }
 
   useEffect(() => {

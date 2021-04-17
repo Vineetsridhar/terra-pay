@@ -74,7 +74,7 @@ export default function CreateAccount() {
             <TextField label="Your name" value={name} onChange={onChangeName} />
             <TextField label="Username" value={username} onChange={onChangeUsername} />
 
-            {!mnemonicKey ? <PrimaryButton onClick={submit} /> : null}
+            {!mnemonicKey ? <PrimaryButton onClick={submit}>Submit</PrimaryButton> : null}
 
             {
                 mnemonicKey ?

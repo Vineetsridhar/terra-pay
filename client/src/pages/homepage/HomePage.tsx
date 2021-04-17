@@ -51,7 +51,7 @@ export const HomePage: React.FunctionComponent = () => {
       </Text>
 
       <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <DefaultButton onClick={() => history.push("/loggedIn/createAccount")}>
+        <DefaultButton onClick={() => history.push("/createAccount")}>
           Create Account
         </DefaultButton>
         <PrimaryButton href="/importAccount">Import Account</PrimaryButton>
