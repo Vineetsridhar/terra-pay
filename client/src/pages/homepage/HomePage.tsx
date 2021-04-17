@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Stack,
   Text,
@@ -12,6 +12,8 @@ import "./HomePage.css";
 import { LCDClient, Coin } from "@terra-money/terra.js";
 import { useHistory } from "react-router-dom";
 import { globalStyles } from "../../assets/styles";
+import CreateAccount from "../createaccount/CreateAccount";
+import { ImportAccount } from "../importaccount/ImportAccount";
 
 const stackTokens: IStackTokens = { childrenGap: 15 };
 
@@ -22,13 +24,14 @@ const terra = new LCDClient({
 
 export const HomePage: React.FunctionComponent = () => {
   const history = useHistory();
+  const [displayedComponent, setDisplayedComponent] = useState("none");
 
   useEffect(() => {
-    const address = localStorage.getItem('address');
-    if(address){
-      history.push('/dashboard')
+    const address = localStorage.getItem("address");
+    if (address) {
+      history.push("/dashboard");
     }
-  }, [])
+  }, []);
 
   return (
     <Stack
@@ -51,11 +54,27 @@ export const HomePage: React.FunctionComponent = () => {
       </Text>
 
       <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <DefaultButton onClick={() => history.push("/createAccount")}>
+        <DefaultButton
+          onClick={() => {
+            displayedComponent == "create"
+              ? setDisplayedComponent("none")
+              : setDisplayedComponent("create");
+          }}
+        >
           Create Account
         </DefaultButton>
-        <PrimaryButton href="/importAccount">Import Account</PrimaryButton>
+        <PrimaryButton
+          onClick={() => {
+            displayedComponent == "import"
+              ? setDisplayedComponent("none")
+              : setDisplayedComponent("import");
+          }}
+        >
+          Import Account
+        </PrimaryButton>
       </Stack>
+      {displayedComponent == "create" && <CreateAccount />}
+      {displayedComponent == "import" && <ImportAccount />}
     </Stack>
   );
 };

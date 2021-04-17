@@ -25,50 +25,12 @@ const terra = new LCDClient({
 
 export const ImportAccount: React.FunctionComponent = () => {
   return (
-    <Stack horizontal styles={{ root: { height: "100%" } }}>
-      <Stack.Item
-        disableShrink
-        styles={{
-          root: {
-            alignItems: "center",
-            display: "flex",
-            justifyContent: "center",
-            overflow: "hidden",
-            width: "200px",
-            height: "100%",
-            borderRight: "2px solid grey",
-          },
-        }}
-      >
-        <Stack
-          horizontalAlign="center"
-          verticalAlign="start"
-          verticalFill
-          styles={{
-            root: {
-              margin: "0 auto",
-              textAlign: "center",
-              color: "#605e5c",
-            },
-          }}
-          tokens={stackTokens}
-        >
-          <img className="App-logo" src={logo} alt="logo" />
-          <Text variant="xxLarge" styles={boldStyle}>
-            TerraPay
-          </Text>
-          <Separator />
-
-          <DefaultButton href="/"> Home</DefaultButton>
-          <PrimaryButton href="/"> About </PrimaryButton>
-        </Stack>
-      </Stack.Item>
-      <Stack.Item grow>
-        <Text variant="xxLarge" styles={boldStyle}>
-          Please enter your 12-word seed phrase you received when creating a terra wallet (space between words).
-        </Text>
-        <TextField label="Mnemonic" multiline rows={3} />
-      </Stack.Item>
+    <Stack>
+      <Text variant="xxLarge" styles={boldStyle}>
+        Please enter your 12-word seed phrase you received when creating a terra
+        wallet (space between words).
+      </Text>
+      <TextField label="Mnemonic" multiline rows={3} />
     </Stack>
   );
 };
