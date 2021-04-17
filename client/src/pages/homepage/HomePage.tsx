@@ -10,8 +10,8 @@ import {
 import logo from "./logo.svg";
 import "./HomePage.css";
 import { useHistory } from 'react-router-dom'
+import { globalStyles } from "../../assets/styles";
 
-const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
 
 export const HomePage: React.FunctionComponent = () => {
@@ -33,7 +33,7 @@ export const HomePage: React.FunctionComponent = () => {
       tokens={stackTokens}
     >
       <img className="App-logo" src={logo} alt="logo" />
-      <Text variant="xxLarge" styles={boldStyle}>
+      <Text variant="xxLarge" styles={globalStyles.bold}>
         Welcome to TerraPay
       </Text>
 
