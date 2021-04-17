@@ -2,7 +2,6 @@ import React from "react";
 import {
   Stack,
   Text,
-  Link,
   FontWeights,
   IStackTokens,
   PrimaryButton,
@@ -11,8 +10,9 @@ import {
 import logo from "./logo.svg";
 import "./HomePage.css";
 import { LCDClient, Coin } from "@terra-money/terra.js";
+import { useHistory } from "react-router-dom";
+import { globalStyles } from "../../assets/styles";
 
-const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
 
 const terra = new LCDClient({
@@ -21,6 +21,8 @@ const terra = new LCDClient({
 });
 
 export const HomePage: React.FunctionComponent = () => {
+  const history = useHistory();
+
   return (
     <Stack
       horizontalAlign="center"
@@ -37,13 +39,15 @@ export const HomePage: React.FunctionComponent = () => {
       tokens={stackTokens}
     >
       <img className="App-logo" src={logo} alt="logo" />
-      <Text variant="xxLarge" styles={boldStyle}>
+      <Text variant="xxLarge" styles={globalStyles.bold}>
         Welcome to TerraPay
       </Text>
 
       <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <DefaultButton> Create Account</DefaultButton>
-        <PrimaryButton href="/loggedIn"> Import Account </PrimaryButton>
+        <DefaultButton onClick={() => history.push("/createAccount")}>
+          Create Account
+        </DefaultButton>
+        <PrimaryButton href="/loggedIn">Import Account</PrimaryButton>
       </Stack>
     </Stack>
   );

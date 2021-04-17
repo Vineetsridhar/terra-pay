@@ -8,9 +8,10 @@ import {
   PrimaryButton,
   DefaultButton,
 } from "@fluentui/react";
-import logo from "./logo.svg";
+import { Separator } from "@fluentui/react/lib/Separator";
 import "./LoggedIn.css";
 import { LCDClient, Coin } from "@terra-money/terra.js";
+import logo from "../homepage/logo.svg";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
@@ -22,28 +23,49 @@ const terra = new LCDClient({
 
 export const LoggedIn: React.FunctionComponent = () => {
   return (
-    <Stack
-      horizontalAlign="center"
-      verticalAlign="center"
-      verticalFill
-      styles={{
-        root: {
-          width: "960px",
-          margin: "0 auto",
-          textAlign: "center",
-          color: "#605e5c",
-        },
-      }}
-      tokens={stackTokens}
-    >
-      <Text variant="xxLarge" styles={boldStyle}>
-        Welcome to TerraPay
-      </Text>
+    <Stack horizontal styles={{ root: { height: "100%" } }}>
+      <Stack.Item
+        disableShrink
+        styles={{
+          root: {
+            alignItems: "center",
+            display: "flex",
+            justifyContent: "center",
+            overflow: "hidden",
+            width: "200px",
+            height: "100%",
+            borderRight: "2px solid grey",
+          },
+        }}
+      >
+        <Stack
+          horizontalAlign="center"
+          verticalAlign="start"
+          verticalFill
+          styles={{
+            root: {
+              margin: "0 auto",
+              textAlign: "center",
+              color: "#605e5c",
+            },
+          }}
+          tokens={stackTokens}
+        >
+          <img className="App-logo" src={logo} alt="logo" />
+          <Text variant="xxLarge" styles={boldStyle}>
+            TerraPay
+          </Text>
+          <Separator />
 
-      <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <DefaultButton href="/"> Create Account</DefaultButton>
-        <PrimaryButton href="/loggedIn"> Import Account </PrimaryButton>
-      </Stack>
+          <DefaultButton href="/"> Home</DefaultButton>
+          <PrimaryButton href="/"> About </PrimaryButton>
+        </Stack>
+      </Stack.Item>
+      <Stack.Item grow>
+        <Text variant="xxLarge" styles={boldStyle}>
+          sjlkdfn
+        </Text>
+      </Stack.Item>
     </Stack>
   );
 };
