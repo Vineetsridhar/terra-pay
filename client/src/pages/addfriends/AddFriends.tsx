@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
   Stack,
   Text,
@@ -14,14 +14,14 @@ import { Separator } from "@fluentui/react/lib/Separator";
 import "./AddFriends.css";
 import { globalEmitter } from "../../helpers/emitter";
 import { LCDClient, Coin, MnemonicKey } from "@terra-money/terra.js";
-import {useHistory} from 'react-router-dom'
-import { getFriendRequests } from "../../helpers/network";
+import { useHistory } from 'react-router-dom'
+import { getFriendRequests, sendFriendRequest } from "../../helpers/network";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 interface FriendRequest {
-  sender:string, 
-  recipient:string, 
-  value:number
+  sender: string,
+  recipient: string,
+  value: number
 }
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
@@ -35,7 +35,7 @@ export const AddFriends: React.FunctionComponent = () => {
 
   const getRequests = async () => {
     const username = localStorage.getItem("username");
-    if(!username){
+    if (!username) {
       history.push('/')
       return
     }
@@ -55,11 +55,17 @@ export const AddFriends: React.FunctionComponent = () => {
     }
   }
 
-  const sendFriendRequest = () => {
-    if(friendUsername != ""){
-
+  const handleFriendRequest = () => {
+    if (friendUsername != "") {
+      const local_key = localStorage.getItem("private_key");
+      const username = localStorage.getItem("username");
+      if (!username || !local_key) {
+        history.push('/');
+        return;
+      }
+      sendFriendRequest(username, friendUsername, parseInt(local_key));
     }
-    else{
+    else {
       globalEmitter.emit("notification", { type: "error", message: "Please enter a valid username to send a friend request to." })
     }
   }
@@ -70,7 +76,7 @@ export const AddFriends: React.FunctionComponent = () => {
         Please enter your friend's username:
       </Text>
       <TextField label="Username" onChange={onChangeUsername} />
-      <PrimaryButton onClick={sendFriendRequest}>Send request</PrimaryButton>
+      <PrimaryButton onClick={handleFriendRequest}>Send request</PrimaryButton>
       {allRequests.map(req => (
         <div>
           {`${req.sender} ${req.value}`}
