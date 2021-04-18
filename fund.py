@@ -26,8 +26,8 @@ async def fund_wallet(recipient, amount):
     balances = terra.bank.balance(public_address)
     current_balance = balances.get('uusd')
     current_amount = float(current_balance.to_data()['amount'])/1000000
-
     # convert amount to string
+    '''
     string_builder = ""
     recipient_amount_list = str(amount).split('.')
     recipient_amount = recipient_amount_list[0]
@@ -40,20 +40,19 @@ async def fund_wallet(recipient, amount):
             string_builder += "0"    
     else:
         string_builder += "000000"
-    print(string_builder)
+    '''
 
     # Process funding
-    if amount <= current_amount:
+    if amount <= int(current_amount):
         tx = wallet.create_and_sign_tx(
         msgs=[MsgSend(
             wallet.key.acc_address,
             recipient,
-            string_builder + "uusd" # send amount in UST
+            str(int(amount*10000)) + "uusd" # send amount in UST
         )],
         memo="test transaction!",
         fee=StdFee(300000, "300000uusd")
         )
         result = terra.tx.broadcast(tx)
-        #print(result)
     else:
         print("Amount is greater than funding wallet balance.")
