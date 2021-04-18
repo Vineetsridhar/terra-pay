@@ -1,5 +1,5 @@
 export function getEndpoint(path: string) {
-  return `https://c645fa69443d.ngrok.io/${path}`;
+  return `http://localhost:8081/${path}`;
 }
 
 function getAuthToken() {
