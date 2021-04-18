@@ -1,13 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { PaymentRequestButtonElement, useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-import { PrimaryButton, TextField } from 'office-ui-fabric-react';
-import { globalEmitter } from '../../helpers/emitter';
-import { fundAccount, getPaymentIntent } from '../../helpers/network';
+import React, { useState, useEffect } from "react";
+import {
+  PaymentRequestButtonElement,
+  useStripe,
+  useElements,
+  CardElement,
+} from "@stripe/react-stripe-js";
+import { PrimaryButton, Stack, Text, TextField } from "office-ui-fabric-react";
+import { globalEmitter } from "../../helpers/emitter";
+import { fundAccount, getPaymentIntent } from "../../helpers/network";
 
 export const CheckoutForm = () => {
   const stripe = useStripe();
   const elements = useElements();
-
+  const options = {
+    iconStyle: "solid",
+    style: {
+      base: {
+        iconColor: "#c4f0ff",
+        color: "#fff",
+        fontWeight: 500,
+        fontFamily: "Roboto, Open Sans, Segoe UI, sans-serif",
+        fontSize: "16px",
+        fontSmoothing: "antialiased",
+        ":-webkit-autofill": {
+          color: "#fce883",
+        },
+        "::placeholder": {
+          color: "#87bbfd",
+        },
+      },
+      invalid: {
+        iconColor: "#ffc7ee",
+        color: "#ffc7ee",
+      },
+    },
+  };
   const [amountValidated, setAmountValidated] = useState(0);
   const [validated, setValidated] = useState(false);
   const [amount, setAmount] = useState("");
@@ -16,62 +43,149 @@ export const CheckoutForm = () => {
     if (newValue) {
       setAmount(newValue);
     } else {
-      setAmount("")
+      setAmount("");
     }
-  }
+  };
 
   const onSubmitClick = () => {
     if (isNaN(parseFloat(amount))) {
-      globalEmitter.emit("notification", { type: "error", message: "Please enter a valid value" })
-      return
+      globalEmitter.emit("notification", {
+        type: "error",
+        message: "Please enter a valid value",
+      });
+      return;
     }
     const value = parseFloat(amount) * 100;
     if (value < 0) {
-      globalEmitter.emit("notification", { type: "error", message: "Please enter a positive value" })
-      return
+      globalEmitter.emit("notification", {
+        type: "error",
+        message: "Please enter a positive value",
+      });
+      return;
     }
-    setAmountValidated(value)
-    setValidated(true)
-  }
+    setAmountValidated(value);
+    setValidated(true);
+  };
 
   const onClickPay = async () => {
-    const {error, paymentMethod} = await stripe.createPaymentMethod({
-      type: 'card',
+    const { error, paymentMethod } = await stripe.createPaymentMethod({
+      type: "card",
       card: elements.getElement(CardElement),
     });
-    const client_secret = await getPaymentIntent(amountValidated, paymentMethod);
-    const {paymentIntent, error: confirmError} = await stripe.confirmCardPayment(
+    const client_secret = await getPaymentIntent(
+      amountValidated,
+      paymentMethod
+    );
+    const {
+      paymentIntent,
+      error: confirmError,
+    } = await stripe.confirmCardPayment(
       client_secret.clientSecret,
-      {payment_method: paymentMethod.id},
-      {handleActions: false}
+      { payment_method: paymentMethod.id },
+      { handleActions: false }
     );
 
-    if(confirmError){
+    if (confirmError) {
       console.log("error");
+    } else {
+      // Let Stripe.js handle the rest of the payment flow.
+      const { error } = await stripe.confirmCardPayment(
+        client_secret.clientSecret
+      );
+      if (error) {
+        globalEmitter.emit("notification", {
+          type: "error",
+          message: "Payment was not successful",
+        });
+      } else {
+        fundAccount(amountValidated, localStorage.getItem("address"));
+      }
     }
-    else{
-        // Let Stripe.js handle the rest of the payment flow.
-        const {error} = await stripe.confirmCardPayment(client_secret.clientSecret);
-        if (error) {
-          globalEmitter.emit("notification", { type: "error", message: "Payment was not successful" })
-        } else {
-          fundAccount(amountValidated, localStorage.getItem('address'))
-        }
-    }
-  }
+  };
 
   return (
     <>
-      {validated ?
-        <>
-          <CardElement />
-          <PrimaryButton onClick={onClickPay} disabled={!(stripe || elements)}>Submit</PrimaryButton>
-        </> :
-        <>
-          <TextField label="Amount to deposit" value={amount} onChange={onChangeAmount} />
-          <PrimaryButton onClick={onSubmitClick}>Submit</PrimaryButton>
-        </>
-      }
+      <Stack
+        styles={{
+          root: {
+            alignItems: "center",
+            display: "flex",
+            justifyContent: "center",
+            overflow: "hidden",
+            width: "100%",
+            height: "100%",
+          },
+        }}
+      >
+        {validated ? (
+          <>
+            <form
+              onSubmit={onClickPay}
+              style={{ height: "100%", width: "50%" }}
+            >
+              <Stack
+                styles={{
+                  root: {
+                    alignItems: "center",
+                    display: "flex",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    width: "100%",
+                    height: "100%",
+                  },
+                }}
+              >
+                <CardElement
+                  options={options}
+                  onReady={() => {
+                    console.log("CardElement [ready]");
+                  }}
+                  onChange={(event) => {
+                    console.log("CardElement [change]", event);
+                  }}
+                  onBlur={() => {
+                    console.log("CardElement [blur]");
+                  }}
+                  onFocus={() => {
+                    console.log("CardElement [focus]");
+                  }}
+                  style={{ border: "2px solid red" }}
+                />
+                <PrimaryButton
+                  onClick={onClickPay}
+                  disabled={!(stripe || elements)}
+                >
+                  Submit
+                </PrimaryButton>
+              </Stack>
+            </form>
+          </>
+        ) : (
+          <>
+            <Text variant="xxLarge">Deposit Funds</Text>
+
+            <Stack horizontal>
+              <TextField
+                placeholder="Amount to deposit"
+                value={amount}
+                onChange={onChangeAmount}
+                styles={{
+                  fieldGroup: {
+                    borderTopLeftRadius: 12,
+                    borderBottomLeftRadius: 12,
+                  },
+                }}
+              />
+              <PrimaryButton
+                onClick={onSubmitClick}
+                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+              >
+                Submit
+              </PrimaryButton>
+            </Stack>
+          </>
+        )}
+      </Stack>
     </>
-  )
-}
+  );
+};

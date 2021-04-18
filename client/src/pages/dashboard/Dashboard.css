@@ -36,3 +36,8 @@
     transform: rotate(360deg);
   }
 }
+
+.navBarButton:hover {
+  background-color: #282c34;
+  color: white !important;
+}

@@ -24,9 +24,10 @@ import { useHistory } from "react-router-dom";
 import { AddFunds } from "../addfunds/AddFunds";
 import { AddFriends } from "../addfriends/AddFriends";
 import { SendMoney } from "../sendMoney/SendMoney";
+import { globalStyles } from "../../assets/styles";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
-const stackTokens: IStackTokens = { childrenGap: 15 };
+const stackTokens: IStackTokens = { childrenGap: 1 };
 
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
@@ -52,7 +53,10 @@ export const Dashboard: React.FunctionComponent = () => {
     getBalanceData(address);
   }, []);
   return (
-    <Stack horizontal styles={{ root: { height: "100%" } }}>
+    <Stack
+      horizontal
+      styles={{ root: { height: "100%", color: globalStyles.colors.text } }}
+    >
       <Stack.Item
         disableShrink
         styles={{
@@ -63,7 +67,10 @@ export const Dashboard: React.FunctionComponent = () => {
             overflow: "hidden",
             width: "200px",
             height: "100%",
-            borderRight: "2px solid grey",
+            borderRight: `15px solid ${globalStyles.colors.emphasis}`,
+            borderTopRightRadius: 20,
+            borderBottomRightRadius: 20,
+            backgroundColor: globalStyles.colors.background2,
           },
         }}
       >
@@ -73,31 +80,101 @@ export const Dashboard: React.FunctionComponent = () => {
           verticalFill
           styles={{
             root: {
-              margin: "0 auto",
+              width: "100%",
+              display: "flex",
+              margin: "0",
               textAlign: "center",
-              color: "#605e5c",
             },
           }}
-          tokens={stackTokens}
+          // tokens={stackTokens}
         >
           <img className="App-logo" src={logo} alt="logo" />
-          <Text variant="xxLarge" styles={boldStyle}>
+          <Text
+            variant="xxLarge"
+            styles={{
+              root: {
+                ...boldStyle.root,
+                ...{ color: globalStyles.colors.foreground2 },
+              },
+            }}
+          >
             TerraPay
           </Text>
-         
+
           <Separator />
-          
-          <DefaultButton href="/dashboard/addFunds">
+
+          <div
+            className="navBarButton"
+            style={{
+              height: "6%",
+              width: "95%",
+              fontSize: "1.55em",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: globalStyles.colors.text,
+            }}
+            onClick={() => {
+              history.push("/dashboard/addFunds");
+            }}
+          >
             Deposit Funds
-          </DefaultButton>
-          <DefaultButton href="/dashboard/addFriends">
+          </div>
+          <div
+            className="navBarButton"
+            style={{
+              height: "6%",
+              width: "95%",
+              fontSize: "1.55em",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: globalStyles.colors.text,
+            }}
+            onClick={() => {
+              history.push("/dashboard/addFriends");
+            }}
+          >
             Add Friends
-          </DefaultButton>
-          <DefaultButton href="/dashboard/sendMoney">Send Money</DefaultButton>
-          <PrimaryButton href="/"> About </PrimaryButton>
+          </div>
+          <div
+            className="navBarButton"
+            style={{
+              height: "6%",
+              width: "95%",
+              fontSize: "1.55em",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: globalStyles.colors.text,
+            }}
+            onClick={() => {
+              history.push("/dashboard/sendMoney");
+            }}
+          >
+            Send Money
+          </div>
+
+          <div
+            className="navBarButton"
+            style={{
+              height: "6%",
+              width: "95%",
+              fontSize: "1.55em",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: globalStyles.colors.text,
+            }}
+            onClick={() => {
+              history.push("/");
+            }}
+          >
+            About
+          </div>
         </Stack>
       </Stack.Item>
-
+      <Stack.Item></Stack.Item>
       <Stack.Item grow>
         <Switch>
           <Route path={`${path}/addFriends`}>
