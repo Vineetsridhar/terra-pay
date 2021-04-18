@@ -17,8 +17,7 @@ con = sqlite3.connect('users.db', check_same_thread=False)
 cur = con.cursor()
 
 cur.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(32), username VARCHAR(32), publicKey INTEGER);')
-cur.execute('CREATE TABLE IF NOT EXISTS friend_request (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), value INTEGER);')
-cur.execute('CREATE TABLE IF NOT EXISTS friend_response (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), address VARCHAR(255), value INTEGER);')
+cur.execute('CREATE TABLE IF NOT EXISTS friend_request (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), address VARCHAR(255), response INTEGER);')
 
 load_dotenv(find_dotenv())  
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
@@ -47,22 +46,36 @@ def getAllFriendRequests():
     data = request.json
     if "username" not in data:
         return make_error_block("Params missing")
-    items = cur.execute("SELECT * FROM friend_request WHERE recipient='%s'" % data["username"])
-    output = [{"sender":item[1], "recipient":item[2], "value":item[3]} for item in items]
+    items = cur.execute("SELECT * FROM friend_request WHERE recipient='%s' AND response=0" % data["username"])
+    output = [{"sender":item[1], "recipient":item[2], "address":item[3]} for item in items]
     return {"success":True, "requests":output}
+
+@APP.route('/getPublicKey', methods=['POST'])
+@cross_origin() 
+def getPublicKey():
+    data = request.json
+    if "username" not in data:
+        return make_error_block("Params missing")
+    items = cur.execute("SELECT * FROM users WHERE username='%s'" % data["username"])
+    output = [{"sender":item[1], "recipient":item[2], "publicKey":item[3]} for item in items]
+    if not len(output):
+        return make_error_block("No user found")
+    return {"success":True, "publicKey":output[0]["publicKey"]}
+
 
 @APP.route('/initiateRequest', methods=['POST'])
 @cross_origin() 
 def initiateRequest():
     data = request.json
-    if "sender" not in data or "recipient" not in data or "value" not in data:
+    if "sender" not in data or "recipient" not in data or "address" not in data:
         return make_error_block("Params missing")
+
     find = cur.execute('SELECT * FROM friend_request WHERE sender="%s" and recipient="%s";' %  (data["sender"], data["recipient"]))
     values = [item for item in find]
     if len(values) > 0:
         return make_error_block("You can only have one outgoing friend request")
 
-    cur.execute('INSERT INTO friend_request (sender, recipient, value) VALUES ("%s", "%s", "%s")' % (data["sender"], data["recipient"], data["value"]))
+    cur.execute('INSERT INTO friend_request (sender, recipient, address, response) VALUES ("%s", "%s", "%s", 0)' % (data["sender"], data["recipient"], data["address"]))
     con.commit()
 
     return {"success":True}
@@ -71,10 +84,9 @@ def initiateRequest():
 @cross_origin() 
 def sendResponse():
     data = request.json
-    if "sender" not in data or "recipient" not in data or "value" not in data or "address" not in data:
+    if "sender" not in data or "recipient" not in data or "address" not in data:
         return make_error_block("Params missing")
-    cur.execute('DELETE FROM friend_request WHERE sender="%s" and recipient="%s"', (data["sender"], data["recipient"]))
-    cur.execute('INSERT INTO friend_response (sender, recipient, value, address) VALUES ("%s", "%s", "%s")' % (data["sender"], data["recipient"], data["value"], data["address"]))
+    cur.execute('INSERT INTO friend_request (sender, recipient, address, response) VALUES ("%s", "%s", "%s", 1)' % (data["sender"], data["recipient"], data["address"]))
     con.commit()
 
     return {"success":True}
@@ -95,7 +107,7 @@ def isUsernameUnique():
 @cross_origin() 
 def newUser():
     data = request.json
-    if "name" not in data or "username" not in data:
+    if "name" not in data or "username" not in data or "publicKey" not in data:
         return make_error_block("Params missing")
     cur.execute('INSERT INTO users (name, username, publicKey) VALUES ("%s", "%s", %d)' % (data["name"], data["username"], data["publicKey"]))
     con.commit()
