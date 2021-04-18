@@ -47,7 +47,7 @@ def getAllFriendRequests():
     data = request.json
     if "username" not in data:
         return make_error_block("Params missing")
-    items = cur.execute("SELECT * FROM friend_request WHERE username='%s'" % data["username"])
+    items = cur.execute("SELECT * FROM friend_request WHERE recipient='%s'" % data["username"])
     output = [value for value in items]
     return {"success":True, requests:output}
 
