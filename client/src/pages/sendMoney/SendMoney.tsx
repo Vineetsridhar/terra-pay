@@ -55,6 +55,7 @@ export const SendMoney: React.FunctionComponent = () => {
     { username: string; address: string }[]
   >([]);
   const [amount, setAmount] = useState("");
+  const [memo, setMemo] = useState("")
 
   const [loading, setLoading] = useState(false)
 
@@ -156,7 +157,7 @@ export const SendMoney: React.FunctionComponent = () => {
         wallet
           .createAndSignTx({
             msgs: [send],
-            memo: "Terra-Pay: From " + username + " to " + selectedFriend,
+            memo: `Terra-Pay: From ${username} to ${selectedFriend}~${memo}`,
           })
           .then((tx) => {
             console.log(tx);
@@ -166,6 +167,7 @@ export const SendMoney: React.FunctionComponent = () => {
             setAmount("")
             getBalance()
             setSelectedFriend("")
+            setMemo("")
             setLoading(false)
             globalEmitter.emit("notification", {
               type: "success",
@@ -193,14 +195,14 @@ export const SendMoney: React.FunctionComponent = () => {
   };
 
   const getTwoDecimalsBalance = () => {
-    if(balance){
+    if (balance) {
       var with2Decimals = balance.toString().match(/^-?\d+(?:\.\d{0,2})?/);
-      if(with2Decimals?.length == 1)
+      if (with2Decimals?.length == 1)
         return with2Decimals[0];
       else
         return balance;
     }
-    else{
+    else {
       return 0;
     }
   }
@@ -425,7 +427,40 @@ export const SendMoney: React.FunctionComponent = () => {
                     />
                   </div>
                 )}
+
               </Stack>
+              {selectedFriend &&
+                <>
+                  <Text
+                    variant="mega"
+                    styles={{
+                      root: {
+                        fontWeight: FontWeights.semibold,
+                        whiteSpace: "nowrap",
+                      },
+                    }}
+                  >
+                    Message:
+                </Text>
+                  <TextField
+                    multiline
+                    styles={{
+                      root: { width: "65%" },
+                      fieldGroup: {
+                        borderRadius: 15,
+                      },
+                    }}
+                    placeholder="Message"
+                    value={memo}
+                    onChange={(value, text) => {
+                      if (text) {
+                        setMemo(text);
+                      } else setMemo("")
+                    }}
+                  />
+                  <br />
+                </>
+              }
               {loading ? <ReactLoading type={"spin"} color={"white"} height={100} width={100} /> :
                 <PrimaryButton
                   styles={{ root: { height: "100px", width: "300px" } }}

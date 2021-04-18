@@ -96,7 +96,7 @@ export const Dashboard: React.FunctionComponent = () => {
             styles={{
               root: {
                 ...boldStyle.root,
-                ...{ color: globalStyles.colors.foreground2 },
+                ...{ color: globalStyles.colors.text },
               },
             }}
           >
@@ -174,23 +174,6 @@ export const Dashboard: React.FunctionComponent = () => {
             Send Money
           </div>
 
-          <div
-            className="navBarButton"
-            style={{
-              height: "6%",
-              width: "95%",
-              fontSize: "1.55em",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: globalStyles.colors.text,
-            }}
-            onClick={() => {
-              history.push("/");
-            }}
-          >
-            About
-          </div>
         </Stack>
       </Stack.Item>
       <Stack.Item></Stack.Item>

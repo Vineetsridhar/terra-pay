@@ -1,14 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap');
 html {
-  font-family: 'Indie Flower', cursive !important;
 }
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: 'Indie Flower', cursive  !important;
 }
 
-code {
-  font-family: 'Indie Flower', cursive;
-}
