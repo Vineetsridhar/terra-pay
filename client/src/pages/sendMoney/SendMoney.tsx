@@ -34,7 +34,7 @@ import {
 import { Scrollbars } from "react-custom-scrollbars";
 import { globalStyles } from "../../assets/styles";
 import bigInt from "big-integer";
-import ReactLoading from 'react-loading';
+import ReactLoading from "react-loading";
 
 const CryptoJS = require("crypto-js");
 
@@ -55,9 +55,9 @@ export const SendMoney: React.FunctionComponent = () => {
     { username: string; address: string }[]
   >([]);
   const [amount, setAmount] = useState("");
-  const [memo, setMemo] = useState("")
+  const [memo, setMemo] = useState("");
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const prefix = "$ ";
   const min = 0;
@@ -127,7 +127,7 @@ export const SendMoney: React.FunctionComponent = () => {
   }, []);
 
   const sendMoney = async () => {
-    setLoading(true)
+    setLoading(true);
     const friends = JSON.parse(localStorage.getItem("friends") ?? "[]");
     const recipient = friends.find(
       (friend: { username: string }) => friend.username == selectedFriend
@@ -153,7 +153,7 @@ export const SendMoney: React.FunctionComponent = () => {
         const send = new MsgSend(localAddress, recipient["address"], {
           uusd: amt * 1000000,
         });
-        console.log(send)
+        console.log(send);
         wallet
           .createAndSignTx({
             msgs: [send],
@@ -164,11 +164,11 @@ export const SendMoney: React.FunctionComponent = () => {
             return terra.tx.broadcast(tx);
           })
           .then((result) => {
-            setAmount("")
-            getBalance()
-            setSelectedFriend("")
-            setMemo("")
-            setLoading(false)
+            setAmount("");
+            getBalance();
+            setSelectedFriend("");
+            setMemo("");
+            setLoading(false);
             globalEmitter.emit("notification", {
               type: "success",
               message: "Your money has been sent over the blockchain!",
@@ -176,13 +176,13 @@ export const SendMoney: React.FunctionComponent = () => {
             console.log(`TX hash: ${result.txhash}`);
           })
           .catch((err) => {
-            setLoading(false)
+            setLoading(false);
             globalEmitter.emit("notification", {
               type: "error",
               message: "There was an error sending your money",
             });
 
-            console.log("ERRRR", err)
+            console.log("ERRRR", err);
           });
       }
     } else {
@@ -197,15 +197,12 @@ export const SendMoney: React.FunctionComponent = () => {
   const getTwoDecimalsBalance = () => {
     if (balance) {
       var with2Decimals = balance.toString().match(/^-?\d+(?:\.\d{0,2})?/);
-      if (with2Decimals?.length == 1)
-        return with2Decimals[0];
-      else
-        return balance;
-    }
-    else {
+      if (with2Decimals?.length == 1) return with2Decimals[0];
+      else return balance;
+    } else {
       return 0;
     }
-  }
+  };
   return (
     <>
       <Stack
@@ -251,7 +248,7 @@ export const SendMoney: React.FunctionComponent = () => {
                 borderRadius: 10,
                 borderTopLeftRadius: 50,
                 borderBottomLeftRadius: 50,
-                fontFamily: "inherit"
+                fontFamily: "inherit",
               },
             }}
           >
@@ -288,10 +285,11 @@ export const SendMoney: React.FunctionComponent = () => {
                           borderTopLeftRadius: 50,
                           borderBottomLeftRadius: 50,
                           overflow: "hidden",
-                          backgroundColor: `${selectedFriend === friend.username
-                            ? "grey"
-                            : "white"
-                            }`,
+                          backgroundColor: `${
+                            selectedFriend === friend.username
+                              ? "grey"
+                              : "white"
+                          }`,
                         }}
                         onClick={() => {
                           setSelectedFriend(friend.username);
@@ -317,10 +315,14 @@ export const SendMoney: React.FunctionComponent = () => {
                     </Stack.Item>
                   )
                 )}
-                {friends.length == 0 &&
-                  <Text variant="large" styles={{ root: { textAlign: 'center', paddingTop: 16 } }}>
+                {friends.length == 0 && (
+                  <Text
+                    variant="large"
+                    styles={{ root: { textAlign: "center", paddingTop: 16 } }}
+                  >
                     Add new friends before you can send money
-                </Text>}
+                  </Text>
+                )}
               </Stack>
             </Scrollbars>
           </Stack.Item>
@@ -369,7 +371,7 @@ export const SendMoney: React.FunctionComponent = () => {
                 onChange={(value, text) => {
                   if (text) {
                     setAmount(text);
-                  } else setAmount("")
+                  } else setAmount("");
                 }}
               />
               <Stack
@@ -385,7 +387,7 @@ export const SendMoney: React.FunctionComponent = () => {
                   },
                 }}
               >
-                {selectedFriend &&
+                {selectedFriend && (
                   <Text
                     variant="mega"
                     styles={{
@@ -396,8 +398,8 @@ export const SendMoney: React.FunctionComponent = () => {
                     }}
                   >
                     To:
-                </Text>
-                }
+                  </Text>
+                )}
                 {selectedFriend && (
                   <div
                     style={{
@@ -428,9 +430,8 @@ export const SendMoney: React.FunctionComponent = () => {
                     />
                   </div>
                 )}
-
               </Stack>
-              {selectedFriend &&
+              {selectedFriend && (
                 <>
                   <Text
                     variant="mega"
@@ -442,7 +443,7 @@ export const SendMoney: React.FunctionComponent = () => {
                     }}
                   >
                     Message:
-                </Text>
+                  </Text>
                   <TextField
                     multiline
                     styles={{
@@ -456,13 +457,20 @@ export const SendMoney: React.FunctionComponent = () => {
                     onChange={(value, text) => {
                       if (text) {
                         setMemo(text);
-                      } else setMemo("")
+                      } else setMemo("");
                     }}
                   />
                   <br />
                 </>
-              }
-              {loading ? <ReactLoading type={"spin"} color={"white"} height={100} width={100} /> :
+              )}
+              {loading ? (
+                <ReactLoading
+                  type={"spin"}
+                  color={"white"}
+                  height={100}
+                  width={100}
+                />
+              ) : (
                 <PrimaryButton
                   styles={{ root: { height: "100px", width: "300px" } }}
                   disabled={selectedFriend === ""}
@@ -478,15 +486,17 @@ export const SendMoney: React.FunctionComponent = () => {
                     }}
                   >
                     Pay
-                </Text>
+                  </Text>
                 </PrimaryButton>
-              }
+              )}
             </Stack>
           </Stack.Item>
         </Stack>
-        <Text variant="small" styles={boldStyle}>
-          Your address: {localStorage.getItem("address")}
-        </Text>
+        <Stack.Item style={{ marginTop: "auto" }}>
+          <Text variant="small" styles={boldStyle}>
+            Your address: {localStorage.getItem("address")}
+          </Text>
+        </Stack.Item>
       </Stack>
     </>
   );
