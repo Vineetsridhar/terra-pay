@@ -35,3 +35,8 @@ export async function getPaymentIntent(amount:number){
     const endpoint = getEndpoint('payment');
     return makeCall(endpoint, {amount}).then(response => response.json());
 }
+
+export async function fundAccount(amount:number, address:string){
+    const endpoint = getEndpoint('fund');
+    return makeCall(endpoint, {amount, address}).then(response => response.json());
+}

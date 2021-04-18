@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PaymentRequestButtonElement, useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import { PrimaryButton, TextField } from 'office-ui-fabric-react';
 import { globalEmitter } from '../../helpers/emitter';
-import { getPaymentIntent } from '../../helpers/network';
+import { fundAccount, getPaymentIntent } from '../../helpers/network';
 
 export const CheckoutForm = () => {
   const stripe = useStripe();
@@ -39,7 +39,6 @@ export const CheckoutForm = () => {
       type: 'card',
       card: elements.getElement(CardElement),
     });
-    console.log(paymentMethod);
     const client_secret = await getPaymentIntent(amountValidated, paymentMethod);
     const {paymentIntent, error: confirmError} = await stripe.confirmCardPayment(
       client_secret.clientSecret,
@@ -51,17 +50,13 @@ export const CheckoutForm = () => {
       console.log("error");
     }
     else{
-      if (paymentIntent.status === "requires_action") {
         // Let Stripe.js handle the rest of the payment flow.
         const {error} = await stripe.confirmCardPayment(client_secret.clientSecret);
         if (error) {
-          console.log("Errorrr");
+          globalEmitter.emit("notification", { type: "error", message: "Payment was not successful" })
         } else {
-          console.log("Success");
+          fundAccount(amountValidated, localStorage.getItem('address'))
         }
-      } else {
-        console.log("Success");
-      }
     }
   }
 
