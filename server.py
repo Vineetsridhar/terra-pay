@@ -12,7 +12,6 @@ from flask import Flask, send_from_directory, request
 from dotenv import load_dotenv, find_dotenv
 from flask_cors import cross_origin
 import sqlite3
-import json
 
 con = sqlite3.connect('users.db', check_same_thread=False)
 cur = con.cursor()
