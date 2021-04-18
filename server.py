@@ -78,13 +78,13 @@ def handle_stripe_payment():
     # Create a PaymentIntent with the order amount and currency
     intent = stripe.PaymentIntent.create(
         amount=data['amount'],
-        currency=data['currency']
+        currency='usd'
     )
     try:
         # Send publishable key and PaymentIntent details to client
-        return jsonify({'publishableKey': os.getenv('STRIPE_PUBLISHABLE_KEY'), 'clientSecret': intent.client_secret})
+        return {'publishableKey': os.getenv('STRIPE_PUBLISHABLE_KEY'), 'clientSecret': intent.client_secret}
     except Exception as e:
-        return jsonify(error=str(e)), 403
+        return { 'success': False }, 403
 
 
 # Note we need to add this line so we can import app in the python shell
