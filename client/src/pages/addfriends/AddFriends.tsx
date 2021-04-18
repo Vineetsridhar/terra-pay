@@ -15,13 +15,14 @@ import "./AddFriends.css";
 import { globalEmitter } from "../../helpers/emitter";
 import { LCDClient, Coin, MnemonicKey } from "@terra-money/terra.js";
 import { useHistory } from 'react-router-dom'
-import { getFriendRequests, sendFriendRequest } from "../../helpers/network";
+import { getFriendRequests, sendFriendRequest, getPublicKey, getPrimeNumber } from "../../helpers/network";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 interface FriendRequest {
   sender: string,
   recipient: string,
-  value: number
+  address: string,
+  decryptedAddress: string
 }
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
@@ -32,6 +33,8 @@ export const AddFriends: React.FunctionComponent = () => {
   const history = useHistory();
   const [friendUsername, setFriendUsername] = useState<string>("")
   const [allRequests, setAllRequests] = useState<FriendRequest[]>([])
+  const bigInt = require("big-integer");
+  const CryptoJS = require("crypto-js");
 
   const getRequests = async () => {
     const username = localStorage.getItem("username");
@@ -40,7 +43,12 @@ export const AddFriends: React.FunctionComponent = () => {
       return
     }
     const data = await getFriendRequests(username);
-    setAllRequests(data.requests)
+    const output: FriendRequest[] = []
+    for (let i = 0; i < data.requests.length; i++) {
+      const item: FriendRequest = data.requests[i]
+      output.push({ ...item, decryptedAddress: (await decryptAddress(item.sender, item.address)) })
+    }
+    setAllRequests(output)
   }
 
   useEffect(() => {
@@ -55,15 +63,41 @@ export const AddFriends: React.FunctionComponent = () => {
     }
   }
 
-  const handleFriendRequest = () => {
+  const decryptAddress = async (sender: string, address: string) => {
+    const private_key = localStorage.getItem("private_key");
+    const friendsPublicKey = await getPublicKey(sender);
+    const prime = await getPrimeNumber();
+    if (!private_key) {
+      return
+    }
+    const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
+    return CryptoJS.AES.decrypt(address, shared.toString()).toString(CryptoJS.enc.Utf8);
+  }
+
+  const handleFriendRequest = async () => {
     if (friendUsername != "") {
-      const local_key = localStorage.getItem("private_key");
+      const private_key = localStorage.getItem("private_key");
       const username = localStorage.getItem("username");
-      if (!username || !local_key) {
+      if (!username || !private_key) {
         history.push('/');
         return;
       }
-      sendFriendRequest(username, friendUsername, parseInt(local_key));
+      const friendsPublicKey = await getPublicKey(friendUsername);
+      if (!friendsPublicKey.publicKey) {
+        globalEmitter.emit("notification", { type: "error", message: "The username you have input is invalid." });
+        return;
+      }
+      // Calculate shared secret
+      const prime = await getPrimeNumber();
+      const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
+
+      // Encrypt terra address
+      const terraAddress = localStorage.getItem("address");
+      const encryptedTerraAddress = CryptoJS.AES.encrypt(terraAddress, shared.toString()).toString();
+      const result = await sendFriendRequest(username, friendUsername, encryptedTerraAddress);
+      if(result.success === false){
+        globalEmitter.emit("notification", { type: "error", message: result.message });
+      }
       setFriendUsername("")
     }
     else {
@@ -80,7 +114,7 @@ export const AddFriends: React.FunctionComponent = () => {
       <PrimaryButton onClick={handleFriendRequest}>Send request</PrimaryButton>
       {allRequests.map(req => (
         <div>
-          {`${req.sender} ${req.value}`}
+          {`${req.sender} ${req.decryptedAddress}`}
         </div>
       ))}
     </Stack>

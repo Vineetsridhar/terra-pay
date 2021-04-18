@@ -21,9 +21,14 @@ async function makeCall(callName: string, callParams: any):Promise<any> {
     return fetch(callName, getCallParams(callParams));
 }
 
-export async function sendFriendRequest(sender:string, recipient:string, value:number){
+export async function sendFriendRequest(sender:string, recipient:string, address:string){
     const endpoint = getEndpoint('initiateRequest');
-    return makeCall(endpoint, {sender, recipient, value}).then(response => response.json());
+    return makeCall(endpoint, {sender, recipient, address}).then(response => response.json());
+}
+
+export async function sendResponse(sender:string, recipient:string, address:string){
+    const endpoint = getEndpoint('sendResponse');
+    return makeCall(endpoint, {sender, recipient, address}).then(response => response.json());
 }
 
 export async function createNewUser(username:string, name:string, publicKey:number){
@@ -48,6 +53,11 @@ export async function fundAccount(amount:number, address:string){
 
 export async function getFriendRequests(username:string){
     const endpoint = getEndpoint('getFriendRequests');
+    return makeCall(endpoint, {username}).then(response => response.json());
+}
+
+export async function getPublicKey(username:string){
+    const endpoint = getEndpoint('getPublicKey');
     return makeCall(endpoint, {username}).then(response => response.json());
 }
 
