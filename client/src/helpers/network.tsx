@@ -61,6 +61,11 @@ export async function getFriendRequests(username:string){
     return makeCall(endpoint, {username}).then(response => response.json());
 }
 
+export async function getFriendResponses(username:string){
+    const endpoint = getEndpoint('getFriendResponses');
+    return makeCall(endpoint, {username}).then(response => response.json());
+}
+
 export async function getPublicKey(username:string){
     const endpoint = getEndpoint('getPublicKey');
     return makeCall(endpoint, {username}).then(response => response.json());

@@ -50,6 +50,16 @@ def getAllFriendRequests():
     output = [{"sender":item[1], "recipient":item[2], "address":item[3]} for item in items]
     return {"success":True, "requests":output}
 
+@APP.route('/getFriendResponses', methods=['POST'])
+@cross_origin() 
+def getFriendResponses():
+    data = request.json
+    if "username" not in data:
+        return make_error_block("Params missing")
+    items = cur.execute("SELECT * FROM friend_request WHERE recipient='%s' AND response=1" % data["username"])
+    output = [{"sender":item[1], "recipient":item[2], "address":item[3]} for item in items]
+    return {"success":True, "responses":output}
+
 @APP.route('/getPublicKey', methods=['POST'])
 @cross_origin() 
 def getPublicKey():

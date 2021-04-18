@@ -116,10 +116,11 @@ export const AddFriends: React.FunctionComponent = () => {
 
   const acceptFriendRequest = async (sender: string, recipient: string, decryptedAddress: string) => {
     const shared = await getSharedKey(recipient)
-    sendResponse(sender, recipient, shared);
+    const terraAddress = localStorage.getItem("address");
+    const encryptedTerraAddress = CryptoJS.AES.encrypt(terraAddress, shared.toString()).toString();
+    sendResponse(sender, recipient, encryptedTerraAddress);
     const friends = JSON.parse(localStorage.getItem("friends") ?? "[]")
     friends.push({ username: recipient, address: decryptedAddress });
-    console.log(friends)
     localStorage.setItem("friends", JSON.stringify(friends))
 
     const output = allRequests.filter(item => item.sender !== recipient)

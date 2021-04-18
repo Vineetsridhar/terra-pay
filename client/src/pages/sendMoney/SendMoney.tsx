@@ -19,8 +19,10 @@ import "./SendMoney.css";
 import { globalEmitter } from "../../helpers/emitter";
 import { LCDClient, Coin, MnemonicKey, Coins, MsgSend } from "@terra-money/terra.js";
 import { useHistory } from "react-router-dom";
-import { getFriendRequests, sendFriendRequest } from "../../helpers/network";
+import { getFriendResponses, denyFriendRequest, getPrimeNumber, getPublicKey } from "../../helpers/network";
 import { Scrollbars } from "react-custom-scrollbars";
+import bigInt from "big-integer";
+const CryptoJS = require("crypto-js");
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const terra = new LCDClient({
@@ -30,32 +32,12 @@ const terra = new LCDClient({
   gasAdjustment: 1.5
 });
 
-const friends = [
-  "qwe",
-  "sdf",
-  "cb",
-  "cvb",
-  "rtu",
-  "dfg",
-  "qwe",
-  "sdf",
-  "cb",
-  "cvb",
-  "rtu",
-  "dfg",
-  "qwe",
-  "sdf",
-  "cb",
-  "cvb",
-  "rtu",
-  "dfg",
-];
-
 export const SendMoney: React.FunctionComponent = () => {
   const history = useHistory();
   const [selectedFriend, setSelectedFriend] = useState("");
   const [balance, setBalance] = useState<number>(0);
   const [mnemonic, setMnemonicKey] = useState<string>("");
+  const [friends, setFriends] = useState<{username:string, address:string}[]>([])
 
   const prefix = "$ ";
   const min = 0;
@@ -83,6 +65,39 @@ export const SendMoney: React.FunctionComponent = () => {
     const mnemonic = localStorage.getItem('mnemonic');
     if(mnemonic)
       setMnemonicKey(mnemonic);
+  }, [])
+  
+  const decryptAddress = async (sender: string, address: string) => {
+    const private_key = localStorage.getItem("private_key");
+    const friendsPublicKey = await getPublicKey(sender);
+    const prime = await getPrimeNumber();
+    if (!private_key) {
+      return
+    }
+    const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
+    return CryptoJS.AES.decrypt(address, shared.toString()).toString(CryptoJS.enc.Utf8);
+  }
+
+  const getResponses = async () => {
+    const username = localStorage.getItem('username')
+    if(!username){
+      history.push('/')
+      return
+    }
+    const responses = await getFriendResponses(username);
+    let friends = JSON.parse(localStorage.getItem('friends') ?? "[]")
+    for(let i = 0; i < responses.responses.length; i++){
+      const curr = responses.responses[i];
+      const address = decryptAddress(curr["sender"], curr["address"])
+      friends.push({username:curr["sender"], address})
+      denyFriendRequest(curr["sender"], curr["recipient"])
+    }
+    localStorage.setItem('friends', JSON.stringify(friends))
+    setFriends(friends) // Just trigger a rerender
+  }
+
+  useEffect(() => {
+    getResponses()
   }, [])
 
   const sendMoney = async (recipient:string, amount:number) => {
@@ -255,7 +270,7 @@ export const SendMoney: React.FunctionComponent = () => {
               },
             }}
           >
-            {friends.map((friendName) => (
+            {friends.map((friend:{username:string, address:string}) => (
               <Stack.Item
                 styles={{
                   root: {
@@ -270,15 +285,15 @@ export const SendMoney: React.FunctionComponent = () => {
                     boxShadow: "0 0 10px #9ecaed",
                     borderRadius: 10,
                     backgroundColor: `${
-                      selectedFriend === friendName ? "grey" : "white"
+                      selectedFriend === friend.username ? "grey" : "white"
                     }`,
                     padding: 8,
                   }}
                   onClick={() => {
-                    setSelectedFriend(friendName);
+                    setSelectedFriend(friend.username);
                   }}
                 >
-                  <Persona text={friendName} size={PersonaSize.size48} />
+                  <Persona text={friend.username} size={PersonaSize.size40} />
                 </div>
               </Stack.Item>
             ))}
