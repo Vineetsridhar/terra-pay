@@ -42,7 +42,7 @@ const boldStyle = { root: {} };
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
   chainID: "tequila-0004",
-  gasPrices: new Coins({ uusd: 0.3 }),
+  gasPrices: new Coins({ uusd: 0.5 }),
   gasAdjustment: 1.5,
 });
 
@@ -140,7 +140,7 @@ export const SendMoney: React.FunctionComponent = () => {
       return;
     }
 
-    if (amt - 0.3 <= balance && mnemonic != "") {
+    if (amt + 0.05 <= balance && mnemonic != "") {
       // Try to process transaction
       const mk = new MnemonicKey({ mnemonic: mnemonic });
       const localAddress = localStorage.getItem("address");
@@ -156,7 +156,7 @@ export const SendMoney: React.FunctionComponent = () => {
         wallet
           .createAndSignTx({
             msgs: [send],
-            memo: "From" + username,
+            memo: "Terra-Pay: From " + username + " to " + selectedFriend,
           })
           .then((tx) => {
             console.log(tx);
@@ -185,9 +185,25 @@ export const SendMoney: React.FunctionComponent = () => {
       }
     } else {
       console.log("error");
+      globalEmitter.emit("notification", {
+        type: "error",
+        message: "Please leave $0.05 for the blockchain fee.",
+      });
     }
   };
 
+  const getTwoDecimalsBalance = () => {
+    if(balance){
+      var with2Decimals = balance.toString().match(/^-?\d+(?:\.\d{0,2})?/);
+      if(with2Decimals?.length == 1)
+        return with2Decimals[0];
+      else
+        return balance;
+    }
+    else{
+      return 0;
+    }
+  }
   return (
     <>
       <Stack
@@ -202,7 +218,7 @@ export const SendMoney: React.FunctionComponent = () => {
         }}
       >
         <Text variant="xxLarge" styles={boldStyle}>
-          Your Balance: ${balance.toFixed(2)}
+          Your Balance: ${getTwoDecimalsBalance()}
         </Text>
         <Stack
           horizontal
