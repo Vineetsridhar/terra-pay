@@ -104,6 +104,23 @@ export const Dashboard: React.FunctionComponent = () => {
           </Text>
 
           <Separator />
+          <div
+            className="navBarButton"
+            style={{
+              height: "6%",
+              width: "95%",
+              fontSize: "1.55em",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: globalStyles.colors.text,
+            }}
+            onClick={() => {
+              history.push("/dashboard/");
+            }}
+          >
+            View History
+          </div>
 
           <div
             className="navBarButton"
@@ -174,6 +191,7 @@ export const Dashboard: React.FunctionComponent = () => {
             Send Money
           </div>
 
+
         </Stack>
       </Stack.Item>
       <Stack.Item></Stack.Item>
@@ -195,7 +213,7 @@ export const Dashboard: React.FunctionComponent = () => {
             <SendMoney />
           </Route>
           <Route path={`${path}/`}>
-            <HomePage />
+            <History />
           </Route>
         </Switch>
       </Stack.Item>

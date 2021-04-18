@@ -157,7 +157,7 @@ export const SendMoney: React.FunctionComponent = () => {
         wallet
           .createAndSignTx({
             msgs: [send],
-            memo: `Terra-Pay: From ${username} to ${selectedFriend}~${memo}`,
+            memo: `Terra-Pay: ${memo}`,
           })
           .then((tx) => {
             console.log(tx);
