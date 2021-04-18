@@ -29,7 +29,7 @@ import {
 import { globalStyles } from "../../assets/styles";
 import Container from "./Container";
 
-const boldStyle = { root: { fontWeight: FontWeights.semibold } };
+const boldStyle = { root: { fontWeight: FontWeights.semibold, fontFamily: "'Comfortaa', cursive", } };
 interface FriendRequest {
   sender: string;
   recipient: string;
@@ -216,6 +216,7 @@ export const AddFriends: React.FunctionComponent = () => {
           Send request
         </PrimaryButton>
       </Stack>
+      <br/>
       <div style={{ display: 'flex', width: '70%', justifyContent: 'space-around' }}>
         <Container
           title="Pending Requests"

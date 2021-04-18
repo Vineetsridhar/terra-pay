@@ -12,7 +12,7 @@ interface props {
 export default function Container({ title, items, pending, acceptCallback, rejectCallback }: props) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <Text variant="xxLarge">
+            <Text variant="xxLarge" styles={{root: {fontFamily: "'Comfortaa', cursive",}}}>
                 {title}
             </Text>
             <div
@@ -20,6 +20,7 @@ export default function Container({ title, items, pending, acceptCallback, rejec
                     ...{
                         alignItems: "center",
                         padding: "25px",
+                        fontFamily: "'Comfortaa', cursive",
                         border: `4px solid ${globalStyles.colors.emphasis}`,
                         borderRadius: 10,
                     }, ...(
@@ -83,6 +84,7 @@ export default function Container({ title, items, pending, acceptCallback, rejec
                                                     borderWidth: 2,
                                                     width: '100%',
                                                     height: '100%',
+                                                    fontFamily: "'Comfortaa', cursive",
                                                     borderRadius: 2,
                                                     padding: 2,
                                                 },
