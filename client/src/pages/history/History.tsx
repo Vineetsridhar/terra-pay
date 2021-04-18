@@ -53,18 +53,24 @@ export const History: React.FunctionComponent = () => {
             const fromAddress = element.tx.value.msg[0].value.from_address;
             const toAddress = element.tx.value.msg[0].value.to_address;
 
-            memo = memo.substring(11).split('~');
-            let parties = memo[0].split(' ');
-            let message = memo[1];
-            let from = parties[1];
-            let to = parties[3];
+            memo = memo.substring(11);
+            const friends = JSON.parse(localStorage.getItem("friends") ?? "[]");
 
             //Outgoing tx
             if(fromAddress == address){
-              outgoingTx.push({ 'username': to, 'amount': amountUsd, 'message': message });
+              const recipient = friends.find(
+                (friend: { username: string, address: string }) => friend.address == toAddress
+              );
+              if(recipient){
+                outgoingTx.push({ 'username': recipient.username, 'amount': amountUsd, 'message': memo });
+              }
+
             }
             else{ //Incoming tx
-              incomingTx.push({ 'username': from, 'amount': amountUsd, 'message': message });
+              const sender = friends.find(
+                (friend: { username: string, address: string }) => friend.address == fromAddress
+              );
+              incomingTx.push({ 'username': sender.username, 'amount': amountUsd, 'message': memo });
             }
           }
         }
@@ -99,7 +105,7 @@ export const History: React.FunctionComponent = () => {
       <Text variant="xxLarge" styles={boldStyle}>
         Incoming Transactions
       </Text> 
-        {incoming.map(
+      {incoming.map(
                   (transaction: { username: string; amount: number; message: string }) => (
                     <Text>From: {transaction.username}, Amount: {transaction.amount}, Message: {transaction.message}</Text>
                   )
