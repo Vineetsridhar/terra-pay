@@ -20,9 +20,10 @@ import CreateAccount from "../createaccount/CreateAccount";
 import { HomePage } from "../homepage/HomePage";
 import { LCDClient, Coin } from "@terra-money/terra.js";
 import logo from "../homepage/logo.svg";
-import { useHistory } from "react-router-dom"
+import { useHistory } from "react-router-dom";
 import { AddFunds } from "../addfunds/AddFunds";
 import { AddFriends } from "../addfriends/AddFriends";
+import { SendMoney } from "../sendMoney/SendMoney";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
@@ -34,22 +35,22 @@ const terra = new LCDClient({
 
 export const Dashboard: React.FunctionComponent = () => {
   let { path, url } = useRouteMatch();
-  const history = useHistory()
+  const history = useHistory();
   const [balance, setBalance] = useState(0);
 
   const getBalanceData = async (address: string) => {
-    const balance = await terra.bank.balance(address)
-    console.log(balance.toArray())
-  }
+    const balance = await terra.bank.balance(address);
+    console.log(balance.toArray());
+  };
 
   useEffect(() => {
-    const address = localStorage.getItem("address")
+    const address = localStorage.getItem("address");
     if (!address) {
-      history.push('/')
-      return
+      history.push("/");
+      return;
     }
-    getBalanceData(address)
-  }, [])
+    getBalanceData(address);
+  }, []);
   return (
     <Stack horizontal styles={{ root: { height: "100%" } }}>
       <Stack.Item
@@ -85,8 +86,13 @@ export const Dashboard: React.FunctionComponent = () => {
           </Text>
           <Separator />
 
-          <DefaultButton href="/dashboard/addFunds">Deposit Funds</DefaultButton>
-          <DefaultButton href="/dashboard/addFriends">Add Friends</DefaultButton>
+          <DefaultButton href="/dashboard/addFunds">
+            Deposit Funds
+          </DefaultButton>
+          <DefaultButton href="/dashboard/addFriends">
+            Add Friends
+          </DefaultButton>
+          <DefaultButton href="/dashboard/sendMoney">Send Money</DefaultButton>
           <PrimaryButton href="/"> About </PrimaryButton>
         </Stack>
       </Stack.Item>
@@ -99,12 +105,14 @@ export const Dashboard: React.FunctionComponent = () => {
           <Route path={`${path}/addFunds`}>
             <AddFunds />
           </Route>
+          <Route path={`${path}/sendMoney`}>
+            <SendMoney />
+          </Route>
           <Route path={`${path}/`}>
             <HomePage />
           </Route>
         </Switch>
       </Stack.Item>
-
     </Stack>
   );
 };
