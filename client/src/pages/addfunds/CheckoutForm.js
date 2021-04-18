@@ -1,36 +1,48 @@
-import React, {useState, useEffect} from 'react';
-import {PaymentRequestButtonElement, useStripe} from '@stripe/react-stripe-js';
+import React, { useState, useEffect } from 'react';
+import { PaymentRequestButtonElement, useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { PrimaryButton, TextField } from 'office-ui-fabric-react';
+import { globalEmitter } from '../../helpers/emitter';
 
 export const CheckoutForm = () => {
   const stripe = useStripe();
-  const [paymentRequest, setPaymentRequest] = useState(null);
+  const elements = useElements();
 
-  useEffect(() => {
-    if (stripe) {
-      const pr = stripe.paymentRequest({
-        country: 'US',
-        currency: 'usd',
-        total: {
-          label: 'Demo total',
-          amount: 1099,
-        },
-        requestPayerName: true,
-        requestPayerEmail: true,
-      });
+  const [amountValidated, setAmountValidated] = useState(0);
+  const [paymentIntent, setPaymentIntent] = useState(null);
+  const [validated, setValidated] = useState(false);
+  const [amount, setAmount] = useState("");
 
-      // Check the availability of the Payment Request API.
-      pr.canMakePayment().then(result => {
-        if (result) {
-          setPaymentRequest(pr);
-        }
-      });
+  const onChangeAmount = (event, newValue) => {
+    if (newValue) {
+      setAmount(newValue);
+    } else {
+      setAmount("")
     }
-  }, [stripe]);
-
-  if (paymentRequest) {
-    return <PaymentRequestButtonElement options={{paymentRequest}} />
   }
 
-  // Use a traditional checkout form.
-  return <div>Hi</div>
+  const onSubmitClick = () => {
+    if (isNaN(parseFloat(amount))) {
+      globalEmitter.emit("notification", { type: "error", message: "Please enter a valid value" })
+      return
+    }
+    const value = parseFloat(amount) * 100;
+    if (value < 0) {
+      globalEmitter.emit("notification", { type: "error", message: "Please enter a positive value" })
+      return
+    }
+    setAmountValidated(value)
+    setValidated(true)
+  }
+
+  return (
+    <>
+      {validated ?
+        <CardElement /> :
+        <>
+          <TextField label="Amount to deposit" value={amount} onChange={onChangeAmount} />
+          <PrimaryButton onClick={onSubmitClick}>Submit</PrimaryButton>
+        </>
+      }
+    </>
+  )
 }

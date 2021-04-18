@@ -25,6 +25,8 @@ export default function CreateAccount() {
     const onChangeName = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
         if (newValue) {
             setName(newValue || '');
+        } else {
+            setName("")
         }
     }
     const onChangeUsername = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
