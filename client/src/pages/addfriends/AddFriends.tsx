@@ -27,6 +27,7 @@ import {
   denyFriendRequest,
 } from "../../helpers/network";
 import { globalStyles } from "../../assets/styles";
+import Container from "./Container";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 interface FriendRequest {
@@ -215,101 +216,21 @@ export const AddFriends: React.FunctionComponent = () => {
           Send request
         </PrimaryButton>
       </Stack>
-      {allRequests.map((req) => (
-        <div>
-          {`${req.sender} ${req.decryptedAddress}`}
-          <PrimaryButton
-            onClick={() =>
-              acceptFriendRequest(
-                req.recipient,
-                req.sender,
-                req.decryptedAddress
-              )
-            }
-          >
-            Accept
-          </PrimaryButton>
-          <DefaultButton
-            onClick={() => rejectFriendRequest(req.sender, req.recipient)}
-          >
-            Reject
-          </DefaultButton>
-        </div>
-      ))}
-      <Text variant="xxLarge" styles={boldStyle}>
-        Your friends
-      </Text>
-      <div
-        style={{
-          alignItems: "center",
-          display: "flex",
-          justifyContent: "flex-end",
-
-          width: "30%",
-          overflow: "hidden",
-          padding: "50px",
-          height: "50%",
-          border: `4px solid ${globalStyles.colors.emphasis}`,
-          borderRadius: 10,
-          borderTopLeftRadius: 40,
-          borderBottomLeftRadius: 40,
-        }}
-      >
-        <Scrollbars autoHeight autoHeightMin={600}>
-          <Stack
-            styles={{
-              root: {
-                alignItems: "flex-end",
-                display: "flex",
-                justifyContent: "flex-end",
-                overflow: "hidden",
-                height: "100%",
-              },
-            }}
-          >
-            {JSON.parse(localStorage.getItem("friends") ?? "[]").map(
-              (friend: { username: string; address: string }) => (
-                <Stack.Item
-                  styles={{
-                    root: {
-                      padding: 5,
-                    },
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 200,
-                      border: `2px solid ${globalStyles.colors.emphasis}`,
-                      boxShadow: "0 0 2px #9ecaed",
-                      borderRadius: 10,
-                      borderTopLeftRadius: 50,
-                      borderBottomLeftRadius: 50,
-                      overflow: "hidden",
-                      backgroundColor: "white",
-                    }}
-                  >
-                    <Persona
-                      text={friend.username}
-                      size={PersonaSize.size56}
-                      styles={{
-                        root: {
-                          backgroundColor: globalStyles.colors.background2,
-                          borderWidth: 2,
-                          borderRadius: 2,
-                          padding: 2,
-                        },
-                        primaryText: {
-                          color: globalStyles.colors.text,
-                        },
-                      }}
-                    />
-                  </div>
-                </Stack.Item>
-              )
-            )}
-          </Stack>
-        </Scrollbars>
+      <div style={{ display: 'flex', width: '70%', justifyContent: 'space-around' }}>
+        <Container
+          title="Pending Requests"
+          items={allRequests}
+          pending
+          acceptCallback={acceptFriendRequest}
+          rejectCallback={rejectFriendRequest} />
+        <Container
+          title="Your friends"
+          items={JSON.parse(localStorage.getItem("friends") ?? "[]")}
+          pending={false}
+          acceptCallback={null}
+          rejectCallback={null} />
       </div>
+
       <Stack.Item style={{ marginTop: "auto" }}>
         <Text variant="small" styles={boldStyle}>
           Your address: {localStorage.getItem("address")}
