@@ -66,7 +66,7 @@ export function WithdrawFunds() {
                 return wallet
                     .createAndSignTx({
                         msgs: [send],
-                        memo: "From" + username,
+                        memo: "From " + username,
                     })
                     .then((tx) => {
                         console.log(tx);
