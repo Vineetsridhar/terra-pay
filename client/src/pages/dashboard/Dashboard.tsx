@@ -19,7 +19,7 @@ import "./Dashboard.css";
 import CreateAccount from "../createaccount/CreateAccount";
 import { HomePage } from "../homepage/HomePage";
 import { LCDClient, Coin } from "@terra-money/terra.js";
-import logo from "../homepage/logo.svg";
+import logo from "../homepage/logo.png";
 import { useHistory } from "react-router-dom";
 import { AddFunds } from "../addfunds/AddFunds";
 import { AddFriends } from "../addfriends/AddFriends";
