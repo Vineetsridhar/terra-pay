@@ -28,7 +28,11 @@ import { globalStyles } from "../../assets/styles";
 import { WithdrawFunds } from "../withdrawfunds/WithdrawFunds";
 import { History } from "../history/History";
 
-const boldStyle = { root: { fontWeight: FontWeights.semibold } };
+const boldStyle = {
+  root: {
+    fontWeight: FontWeights.semibold, fontFamily: "'Comfortaa', cursive", 
+  }
+};
 const stackTokens: IStackTokens = { childrenGap: 1 };
 
 const terra = new LCDClient({
@@ -68,6 +72,7 @@ export const Dashboard: React.FunctionComponent = () => {
             justifyContent: "center",
             overflow: "hidden",
             width: "200px",
+            fontFamily: "'Comfortaa', cursive",
             height: "100%",
             borderRight: `15px solid ${globalStyles.colors.emphasis}`,
             borderTopRightRadius: 20,
@@ -92,7 +97,7 @@ export const Dashboard: React.FunctionComponent = () => {
         >
           <img className="App-logo" src={logo} alt="logo" />
           <Text
-            variant="xxLarge"
+            variant="xLarge"
             styles={{
               root: {
                 ...boldStyle.root,
@@ -107,9 +112,9 @@ export const Dashboard: React.FunctionComponent = () => {
           <div
             className="navBarButton"
             style={{
-              height: "6%",
+              height: "4%",
               width: "95%",
-              fontSize: "1.55em",
+              fontSize: "1.2em",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -125,9 +130,9 @@ export const Dashboard: React.FunctionComponent = () => {
           <div
             className="navBarButton"
             style={{
-              height: "6%",
+              height: "4%",
               width: "95%",
-              fontSize: "1.55em",
+              fontSize: "1.2em",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -142,9 +147,9 @@ export const Dashboard: React.FunctionComponent = () => {
           <div
             className="navBarButton"
             style={{
-              height: "6%",
+              height: "4%",
               width: "95%",
-              fontSize: "1.55em",
+              fontSize: "1.2em",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -159,9 +164,9 @@ export const Dashboard: React.FunctionComponent = () => {
           <div
             className="navBarButton"
             style={{
-              height: "6%",
+              height: "4%",
               width: "95%",
-              fontSize: "1.55em",
+              fontSize: "1.2em",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -176,9 +181,9 @@ export const Dashboard: React.FunctionComponent = () => {
           <div
             className="navBarButton"
             style={{
-              height: "6%",
+              height: "4%",
               width: "95%",
-              fontSize: "1.55em",
+              fontSize: "1.2em",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

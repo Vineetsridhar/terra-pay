@@ -152,6 +152,7 @@ export const CheckoutForm = ({ deposit, callback }) => {
                     overflow: "hidden",
                     width: "100%",
                     height: "100%",
+                    fontFamily: "'Comfortaa', cursive",
                   },
                 }}
               >
@@ -183,7 +184,7 @@ export const CheckoutForm = ({ deposit, callback }) => {
           </>
         ) : (
           <>
-            <Text variant="xxLarge">{deposit ? "Deposit" : "Withdraw"} Funds</Text>
+            <Text variant="xxLarge" styles={{root:{fontFamily: "'Comfortaa', cursive"}}}>{deposit ? "Deposit" : "Withdraw"} Funds</Text>
 
             <Stack horizontal>
               <TextField
@@ -192,6 +193,7 @@ export const CheckoutForm = ({ deposit, callback }) => {
                 onChange={onChangeAmount}
                 styles={{
                   fieldGroup: {
+                    fontFamily: "'Comfortaa', cursive",
                     borderTopLeftRadius: 12,
                     borderBottomLeftRadius: 12,
                   },
