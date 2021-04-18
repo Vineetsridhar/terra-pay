@@ -10,12 +10,16 @@ import {
 import logo from "./logo.svg";
 import "./HomePage.css";
 import { LCDClient, Coin } from "@terra-money/terra.js";
+import FadeIn from "react-fade-in";
 import { useHistory } from "react-router-dom";
 import { globalStyles } from "../../assets/styles";
 import CreateAccount from "../createaccount/CreateAccount";
 import { ImportAccount } from "../importaccount/ImportAccount";
 
 const stackTokens: IStackTokens = { childrenGap: 15 };
+const variants = {
+  y: { from: -200, to: 0 },
+};
 
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
@@ -24,7 +28,11 @@ const terra = new LCDClient({
 
 export const HomePage: React.FunctionComponent = () => {
   const history = useHistory();
-  const [displayedComponent, setDisplayedComponent] = useState("none");
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [displayCreate, setDisplayCreate] = useState(false);
+  const [displayImport, setDisplayImport] = useState(false);
 
   useEffect(() => {
     const address = localStorage.getItem("address");
@@ -72,18 +80,32 @@ export const HomePage: React.FunctionComponent = () => {
           <Stack horizontal tokens={stackTokens} horizontalAlign="center">
             <DefaultButton
               onClick={() => {
-                displayedComponent == "create"
-                  ? setDisplayedComponent("none")
-                  : setDisplayedComponent("create");
+                if (displayImport) {
+                  setDisplayImport(false);
+                  setTimeout(() => {
+                    setShowCreate(true);
+                    setDisplayCreate(true);
+                  }, 500);
+                } else {
+                  setShowCreate(true);
+                  setDisplayCreate(!displayCreate);
+                }
               }}
             >
               Create Account
             </DefaultButton>
             <PrimaryButton
               onClick={() => {
-                displayedComponent == "import"
-                  ? setDisplayedComponent("none")
-                  : setDisplayedComponent("import");
+                if (displayCreate) {
+                  setDisplayCreate(false);
+                  setTimeout(() => {
+                    setShowImport(true);
+                    setDisplayImport(true);
+                  }, 500);
+                } else {
+                  setShowImport(true);
+                  setDisplayImport(!displayImport);
+                }
               }}
             >
               Import Account
@@ -91,8 +113,28 @@ export const HomePage: React.FunctionComponent = () => {
           </Stack>
         </Stack>
       </Stack.Item>
-      {displayedComponent == "create" && <CreateAccount />}
-      {displayedComponent == "import" && <ImportAccount />}
+      <Stack.Item>
+        {showCreate && (
+          <FadeIn
+            visible={displayCreate}
+            onComplete={() => {
+              setShowCreate(displayCreate);
+            }}
+          >
+            <CreateAccount />
+          </FadeIn>
+        )}
+        {showImport && (
+          <FadeIn
+            visible={displayImport}
+            onComplete={() => {
+              setShowImport(displayImport);
+            }}
+          >
+            <ImportAccount />
+          </FadeIn>
+        )}
+      </Stack.Item>
     </Stack>
   );
 };
