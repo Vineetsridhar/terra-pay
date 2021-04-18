@@ -17,47 +17,42 @@ import {
 import { Separator } from "@fluentui/react/lib/Separator";
 import "./SendMoney.css";
 import { globalEmitter } from "../../helpers/emitter";
-import { LCDClient, Coin, MnemonicKey } from "@terra-money/terra.js";
+import {
+  LCDClient,
+  Coin,
+  MnemonicKey,
+  Coins,
+  MsgSend,
+} from "@terra-money/terra.js";
 import { useHistory } from "react-router-dom";
-import { getFriendRequests, sendFriendRequest } from "../../helpers/network";
+import {
+  getFriendResponses,
+  denyFriendRequest,
+  getPrimeNumber,
+  getPublicKey,
+} from "../../helpers/network";
 import { Scrollbars } from "react-custom-scrollbars";
 import { globalStyles } from "../../assets/styles";
+import bigInt from "big-integer";
+const CryptoJS = require("crypto-js");
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
-interface FriendRequest {
-  sender: string;
-  recipient: string;
-  value: number;
-}
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
   chainID: "tequila-0004",
+  gasPrices: new Coins({ uusd: 0.3 }),
+  gasAdjustment: 1.5,
 });
-
-const friends = [
-  "qsdffffffwe",
-  "sdkdjnhksdhgf",
-  "cbdlkmsdlkhg",
-  "cvbdfljkgnmdfg",
-  "rtudkfjgndfg",
-  "dfgfdjgnkdfg",
-  "qwdkfjgne",
-  "sddfgsrtjsf",
-  "cb",
-  "cvb",
-  "rtu",
-  "dfg",
-  "qwe",
-  "sdf",
-  "cb",
-  "cvb",
-  "rtu",
-  "dfg",
-];
 
 export const SendMoney: React.FunctionComponent = () => {
   const history = useHistory();
   const [selectedFriend, setSelectedFriend] = useState("");
+  const [balance, setBalance] = useState<number>(0);
+  const [mnemonic, setMnemonicKey] = useState<string>("");
+  const [friends, setFriends] = useState<
+    { username: string; address: string }[]
+  >([]);
+  const [amount, setAmount] = useState("");
 
   const prefix = "$ ";
   const min = 0;
@@ -66,256 +61,348 @@ export const SendMoney: React.FunctionComponent = () => {
     spinButtonWrapper: { width: 75 },
     root: { display: "flex", justifyContent: "center", padding: "10px" },
   };
+  const stackTokens: IStackTokens = { childrenGap: 20 };
 
-  /** Remove the prefix or any other text after the numbers, or return undefined if not a number */
-  const getNumericPart = (value: string): number | undefined => {
-    const valueRegex = /^\$\ (\d+(\.\d+)?)/;
-    if (valueRegex.test(value)) {
-      const numericValue = Number(value.replace(valueRegex, "$1"));
-      return isNaN(numericValue) ? undefined : numericValue;
+  useEffect(() => {
+    async function getBalance() {
+      const address = localStorage.getItem("address");
+      if (!address) {
+        history.push("/");
+        return;
+      }
+      const coinBalances = await terra.bank.balance(address);
+      const usdBalance = coinBalances.get("uusd");
+      if (usdBalance) {
+        const balance = parseFloat(usdBalance.amount.toString()) / 1000000;
+        setBalance(balance);
+      }
     }
-    return undefined;
+    getBalance();
+    const mnemonic = localStorage.getItem("mnemonic");
+    if (mnemonic) setMnemonicKey(mnemonic);
+  }, []);
+
+  const decryptAddress = async (sender: string, address: string) => {
+    const private_key = localStorage.getItem("private_key");
+    const friendsPublicKey = await getPublicKey(sender);
+    const prime = await getPrimeNumber();
+    if (!private_key) {
+      return;
+    }
+    const shared = bigInt(friendsPublicKey.publicKey).modPow(
+      parseInt(private_key),
+      prime.value
+    );
+    return CryptoJS.AES.decrypt(address, shared.toString()).toString(
+      CryptoJS.enc.Utf8
+    );
   };
 
-  /** Increment the value (or return nothing to keep the previous value if invalid) */
-  const onIncrement = (
-    value: string,
-    event?: React.SyntheticEvent<HTMLElement>
-  ): string | void => {
-    const numericValue = getNumericPart(value);
-    if (numericValue !== undefined) {
-      return prefix + String(numericValue + 1);
+  const getResponses = async () => {
+    const username = localStorage.getItem("username");
+    if (!username) {
+      history.push("/");
+      return;
     }
+    const responses = await getFriendResponses(username);
+    let friends = JSON.parse(localStorage.getItem("friends") ?? "[]");
+    console.log(friends);
+    for (let i = 0; i < responses.responses.length; i++) {
+      const curr = responses.responses[i];
+      const address = decryptAddress(curr["sender"], curr["address"]);
+      friends.push({ username: curr["sender"], address });
+      denyFriendRequest(curr["sender"], curr["recipient"]);
+    }
+    localStorage.setItem("friends", JSON.stringify(friends));
+    setFriends(friends); // Just trigger a rerender
   };
 
-  /** Decrement the value (or return nothing to keep the previous value if invalid) */
-  const onDecrement = (
-    value: string,
-    event?: React.SyntheticEvent<HTMLElement>
-  ): string | void => {
-    const numericValue = getNumericPart(value);
-    if (numericValue !== undefined) {
-      return prefix + String(Math.max(numericValue - 1, min));
-    }
-  };
+  useEffect(() => {
+    getResponses();
+  }, []);
 
-  /**
-   * Clamp the value within the valid range (or return nothing to keep the previous value
-   * if there's not valid numeric input)
-   */
-  const onValidate = (
-    value: string,
-    event?: React.SyntheticEvent<HTMLElement>
-  ): string | void => {
-    let numericValue = getNumericPart(value);
-    if (numericValue !== undefined) {
-      numericValue = Math.max(numericValue, min);
-      return prefix + String(numericValue);
+  const sendMoney = async () => {
+    const friends = JSON.parse(localStorage.getItem("friends") ?? "[]");
+    console.log(friends);
+    const recipient = friends.find(
+      (friend: { username: string }) => friend.username == selectedFriend
+    );
+    const amt = 5;
+    if (isNaN(amt)) {
+      globalEmitter.emit("notification", {
+        type: "error",
+        message: "Please enter a vlid number",
+      });
+      return;
     }
-  };
+    console.log("b", balance);
 
-  /** This will be called after each change */
-  const onChange = (
-    event: React.SyntheticEvent<HTMLElement>,
-    value?: string
-  ): void => {
-    console.log("Value changed to " + value);
+    if (amt - 0.3 <= balance && mnemonic != "") {
+      // Try to process transaction
+      const mk = new MnemonicKey({ mnemonic: mnemonic });
+      const localAddress = localStorage.getItem("address");
+      const username = localStorage.getItem("username");
+      const wallet = terra.wallet(mk);
+      console.log(localAddress, recipient);
+      // create a simple message that moves coin balances
+      if (localAddress && username) {
+        const send = new MsgSend(localAddress, recipient["address"], {
+          uusd: amt * 1000000,
+        });
+        wallet
+          .createAndSignTx({
+            msgs: [send],
+            memo: "From" + username,
+          })
+          .then((tx) => {
+            console.log(tx);
+            return terra.tx.broadcast(tx);
+          })
+          .then((result) => {
+            console.log(`TX hash: ${result.txhash}`);
+          })
+          .catch((err) => console.log("ERRRR", err));
+      }
+    } else {
+      console.log("error");
+    }
   };
 
   return (
-    <Stack
-      horizontal
-      styles={{
-        root: {
-          alignItems: "center",
-          display: "flex",
-          justifyContent: "flex-start",
-          overflow: "hidden",
-          height: "100%",
-        },
-      }}
-    >
-      <Stack.Item
-        disableShrink
+    <>
+      <Stack
         styles={{
           root: {
             alignItems: "center",
             display: "flex",
-            justifyContent: "flex-end",
-
-            width: "40%",
-            overflow: "hidden",
-            padding: "50px",
-            height: "100%",
-          },
-        }}
-      >
-        <Scrollbars autoHeight autoHeightMin={600}>
-          <Stack
-            styles={{
-              root: {
-                alignItems: "flex-end",
-                display: "flex",
-                justifyContent: "flex-end",
-                overflow: "hidden",
-                height: "100%",
-              },
-            }}
-          >
-            {friends.map((friendName) => (
-              <Stack.Item
-                styles={{
-                  root: {
-                    padding: 5,
-                  },
-                }}
-              >
-                <div
-                  style={{
-                    width: 200,
-                    border: `2px solid ${globalStyles.colors.emphasis}`,
-                    boxShadow: "0 0 2px #9ecaed",
-                    borderRadius: 10,
-                    borderTopLeftRadius: 50,
-                    borderBottomLeftRadius: 50,
-                    overflow: "hidden",
-                    backgroundColor: `${
-                      selectedFriend === friendName ? "grey" : "white"
-                    }`,
-                  }}
-                  onClick={() => {
-                    setSelectedFriend(friendName);
-                  }}
-                >
-                  <Persona
-                    text={friendName}
-                    size={PersonaSize.size56}
-                    styles={{
-                      root: {
-                        backgroundColor: globalStyles.colors.background2,
-                        borderWidth: 2,
-                        borderRadius: 2,
-                        padding: 2,
-                      },
-                      primaryText: {
-                        color: globalStyles.colors.text,
-                      },
-                    }}
-                  />
-                </div>
-              </Stack.Item>
-            ))}
-          </Stack>
-        </Scrollbars>
-      </Stack.Item>
-
-      <Stack.Item
-        styles={{
-          root: {
-            alignItems: "center",
-            display: "flex",
-            justifyContent: "flex-end",
+            justifyContent: "flex-start",
             overflow: "hidden",
             height: "100%",
           },
         }}
       >
         <Stack
+          horizontal
           styles={{
             root: {
               alignItems: "center",
+              display: "flex",
+              justifyContent: "flex-start",
               overflow: "hidden",
+              height: "100%",
             },
           }}
+          tokens={stackTokens}
         >
-          <Text variant="mega" styles={boldStyle}>
-            Send
-          </Text>
-          <SpinButton
-            label=""
-            defaultValue={prefix + "0"}
-            min={min}
-            onValidate={onValidate}
-            onIncrement={onIncrement}
-            onDecrement={onDecrement}
-            onChange={onChange}
-            incrementButtonAriaLabel="Increase value by 2"
-            decrementButtonAriaLabel="Decrease value by 2"
-            styles={styles}
-          />
-          <Stack
-            horizontal
+          <Stack.Item
+            disableShrink
             styles={{
               root: {
                 alignItems: "center",
                 display: "flex",
-                justifyContent: "center",
+                justifyContent: "flex-end",
+
+                width: "30%",
                 overflow: "hidden",
-                height: "100%",
-                minHeight: "200px",
+                padding: "50px",
+                height: "50%",
+                border: `4px solid ${globalStyles.colors.emphasis}`,
+                borderRadius: 10,
+                borderTopLeftRadius: 50,
+                borderBottomLeftRadius: 50,
               },
             }}
           >
-            <Text
-              variant="mega"
-              styles={{
-                root: {
-                  fontWeight: FontWeights.semibold,
-                  whiteSpace: "nowrap",
-                },
-              }}
-            >
-              To:
-            </Text>
-            {selectedFriend && (
-              <div
-                style={{
-                  width: 200,
-                  border: `2px solid ${globalStyles.colors.emphasis}`,
-                  boxShadow: "0 0 2px #9ecaed",
-                  borderRadius: 50,
-                  overflow: "hidden",
-                  backgroundColor: "white",
-                  marginTop: "1em",
-                  marginLeft: "1em",
+            <Scrollbars autoHeight autoHeightMin={600}>
+              <Stack
+                styles={{
+                  root: {
+                    alignItems: "flex-end",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    overflow: "hidden",
+                    height: "100%",
+                  },
                 }}
               >
-                <Persona
-                  text={selectedFriend}
-                  size={PersonaSize.size56}
-                  styles={{
-                    root: {
-                      backgroundColor: globalStyles.colors.background2,
-                      borderWidth: 2,
-                      borderRadius: 2,
-                      padding: 2,
-                    },
-                    primaryText: {
-                      color: globalStyles.colors.text,
-                    },
-                  }}
-                />
-              </div>
-            )}
-          </Stack>
-          <PrimaryButton
-            styles={{ root: { height: "100px", width: "300px" } }}
-            disabled={selectedFriend === ""}
+                <Text variant="xxLarge" styles={boldStyle}>
+                  Your Friends
+                </Text>
+                {friends.map(
+                  (friend: { username: string; address: string }) => (
+                    <Stack.Item
+                      styles={{
+                        root: {
+                          padding: 5,
+                        },
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 200,
+                          border: `2px solid ${globalStyles.colors.emphasis}`,
+                          boxShadow: "0 0 2px #9ecaed",
+                          borderRadius: 10,
+                          borderTopLeftRadius: 50,
+                          borderBottomLeftRadius: 50,
+                          overflow: "hidden",
+                          backgroundColor: `${
+                            selectedFriend === friend.username
+                              ? "grey"
+                              : "white"
+                          }`,
+                        }}
+                        onClick={() => {
+                          setSelectedFriend(friend.username);
+                        }}
+                      >
+                        <Persona
+                          text={friend.username}
+                          size={PersonaSize.size56}
+                          styles={{
+                            root: {
+                              backgroundColor: globalStyles.colors.background2,
+                              borderWidth: 2,
+                              borderRadius: 2,
+                              padding: 2,
+                            },
+                            primaryText: {
+                              color: globalStyles.colors.text,
+                            },
+                          }}
+                        />
+                      </div>
+                    </Stack.Item>
+                  )
+                )}
+              </Stack>
+            </Scrollbars>
+          </Stack.Item>
+
+          <Stack.Item
+            styles={{
+              root: {
+                alignItems: "center",
+                display: "flex",
+                justifyContent: "flex-end",
+                overflow: "hidden",
+                height: "60%",
+                border: `4px solid ${globalStyles.colors.emphasis}`,
+                borderRadius: 10,
+                borderTopRightRadius: 50,
+                borderBottomRightRadius: 50,
+              },
+            }}
           >
-            <Text
-              variant="mega"
+            <Stack
               styles={{
                 root: {
-                  fontWeight: FontWeights.semibold,
-                  whiteSpace: "nowrap",
+                  alignItems: "center",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  overflow: "hidden",
                 },
               }}
             >
-              Pay
-            </Text>
-          </PrimaryButton>
+              <Text variant="mega" styles={boldStyle}>
+                Send
+              </Text>
+
+              <TextField
+                styles={{
+                  root: { width: "50%" },
+                  fieldGroup: {
+                    height: "3em",
+                    border: `2px solid ${globalStyles.colors.emphasis}`,
+                    borderRadius: 15,
+                  },
+                  field: { fontSize: "3em" },
+                }}
+                placeholder="Amount"
+                value={amount}
+                onChange={(value, text) => {
+                  setAmount(text);
+                }}
+              />
+              <Stack
+                horizontal
+                styles={{
+                  root: {
+                    alignItems: "center",
+                    display: "flex",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    height: "100%",
+                    minHeight: "200px",
+                  },
+                }}
+              >
+                <Text
+                  variant="mega"
+                  styles={{
+                    root: {
+                      fontWeight: FontWeights.semibold,
+                      whiteSpace: "nowrap",
+                    },
+                  }}
+                >
+                  To:
+                </Text>
+                {selectedFriend && (
+                  <div
+                    style={{
+                      width: 200,
+                      border: `2px solid ${globalStyles.colors.emphasis}`,
+                      boxShadow: "0 0 2px #9ecaed",
+                      borderRadius: 50,
+                      overflow: "hidden",
+                      backgroundColor: "white",
+                      marginTop: "1em",
+                      marginLeft: "1em",
+                    }}
+                  >
+                    <Persona
+                      text={selectedFriend}
+                      size={PersonaSize.size56}
+                      styles={{
+                        root: {
+                          backgroundColor: globalStyles.colors.background2,
+                          borderWidth: 2,
+                          borderRadius: 2,
+                          padding: 2,
+                        },
+                        primaryText: {
+                          color: globalStyles.colors.text,
+                        },
+                      }}
+                    />
+                  </div>
+                )}
+              </Stack>
+              <PrimaryButton
+                styles={{ root: { height: "100px", width: "300px" } }}
+                disabled={selectedFriend === ""}
+              >
+                <Text
+                  variant="mega"
+                  styles={{
+                    root: {
+                      fontWeight: FontWeights.semibold,
+                      whiteSpace: "nowrap",
+                    },
+                  }}
+                >
+                  Pay
+                </Text>
+              </PrimaryButton>
+            </Stack>
+          </Stack.Item>
         </Stack>
-      </Stack.Item>
-    </Stack>
+        <Text variant="small" styles={boldStyle}>
+          Your address: {localStorage.getItem("address")}
+        </Text>
+      </Stack>
+    </>
   );
 };

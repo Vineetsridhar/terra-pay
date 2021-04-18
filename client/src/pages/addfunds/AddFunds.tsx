@@ -1,11 +1,7 @@
-import React from 'react';
-import {CheckoutForm} from './CheckoutForm'
-
+import React from "react";
+import { CheckoutForm } from "./CheckoutForm";
+import "./AddFunds.css";
 
 export function AddFunds() {
-    return (
-        <div>
-            <CheckoutForm/>
-        </div>
-    )
+  return <CheckoutForm />;
 }

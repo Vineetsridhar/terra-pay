@@ -100,6 +100,7 @@ export const Dashboard: React.FunctionComponent = () => {
           >
             TerraPay
           </Text>
+
           <Separator />
 
           <div

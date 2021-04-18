@@ -50,6 +50,16 @@ def getAllFriendRequests():
     output = [{"sender":item[1], "recipient":item[2], "address":item[3]} for item in items]
     return {"success":True, "requests":output}
 
+@APP.route('/getFriendResponses', methods=['POST'])
+@cross_origin() 
+def getFriendResponses():
+    data = request.json
+    if "username" not in data:
+        return make_error_block("Params missing")
+    items = cur.execute("SELECT * FROM friend_request WHERE recipient='%s' AND response=1" % data["username"])
+    output = [{"sender":item[1], "recipient":item[2], "address":item[3]} for item in items]
+    return {"success":True, "responses":output}
+
 @APP.route('/getPublicKey', methods=['POST'])
 @cross_origin() 
 def getPublicKey():
@@ -86,6 +96,9 @@ def sendResponse():
     data = request.json
     if "sender" not in data or "recipient" not in data or "address" not in data:
         return make_error_block("Params missing")
+        
+    cur.execute('DELETE FROM friend_request WHERE sender="%s" and recipient="%s";' %  (data["sender"], data["recipient"]))
+
     cur.execute('INSERT INTO friend_request (sender, recipient, address, response) VALUES ("%s", "%s", "%s", 1)' % (data["sender"], data["recipient"], data["address"]))
     con.commit()
 
@@ -93,9 +106,9 @@ def sendResponse():
 
 @APP.route('/denyRequest', methods=['POST'])
 @cross_origin() 
-def initiateRequest():
+def denyRequest():
     data = request.json
-    if "sender" not in data or "recipient":
+    if "sender" not in data or "recipient" not in data:
         return make_error_block("Params missing")
 
     cur.execute('DELETE FROM friend_request WHERE sender="%s" and recipient="%s";' %  (data["sender"], data["recipient"]))
