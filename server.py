@@ -16,7 +16,7 @@ import sqlite3
 con = sqlite3.connect('users.db', check_same_thread=False)
 cur = con.cursor()
 
-cur.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(32), username VARCHAR(32));')
+cur.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(32), username VARCHAR(32), publicKey INTEGER);')
 cur.execute('CREATE TABLE IF NOT EXISTS friend_request (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), value INTEGER);')
 cur.execute('CREATE TABLE IF NOT EXISTS friend_response (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), address VARCHAR(255), value INTEGER);')
 
@@ -97,7 +97,7 @@ def newUser():
     data = request.json
     if "name" not in data or "username" not in data:
         return make_error_block("Params missing")
-    cur.execute('INSERT INTO users (name, username) VALUES ("%s", "%s")' % (data["name"], data["username"]))
+    cur.execute('INSERT INTO users (name, username, publicKey) VALUES ("%s", "%s", %d)' % (data["name"], data["username"], data["publicKey"]))
     con.commit()
     return {'success': True}, 200
 

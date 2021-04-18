@@ -26,9 +26,9 @@ export async function sendFriendRequest(sender:string, recipient:string, value:n
     return makeCall(endpoint, {sender, recipient, value}).then(response => response.json());
 }
 
-export async function createNewUser(username:string, name:string){
+export async function createNewUser(username:string, name:string, publicKey:number){
     const endpoint = getEndpoint('newUser');
-    return makeCall(endpoint, {username, name}).then(response => response.json());
+    return makeCall(endpoint, {username, name, publicKey}).then(response => response.json());
 }
 
 export async function isUsernameUnique(username:string){

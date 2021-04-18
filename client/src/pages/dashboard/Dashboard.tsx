@@ -20,8 +20,9 @@ import CreateAccount from "../createaccount/CreateAccount";
 import { HomePage } from "../homepage/HomePage";
 import { LCDClient, Coin } from "@terra-money/terra.js";
 import logo from "../homepage/logo.svg";
-import {useHistory} from "react-router-dom"
+import { useHistory } from "react-router-dom"
 import { AddFunds } from "../addfunds/AddFunds";
+import { AddFriends } from "../addfriends/AddFriends";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
@@ -36,14 +37,14 @@ export const Dashboard: React.FunctionComponent = () => {
   const history = useHistory()
   const [balance, setBalance] = useState(0);
 
-  const getBalanceData = async (address:string) => {
+  const getBalanceData = async (address: string) => {
     const balance = await terra.bank.balance(address)
     console.log(balance.toArray())
   }
 
   useEffect(() => {
     const address = localStorage.getItem("address")
-    if(!address){
+    if (!address) {
       history.push('/')
       return
     }
@@ -85,12 +86,16 @@ export const Dashboard: React.FunctionComponent = () => {
           <Separator />
 
           <DefaultButton href="/dashboard/addFunds">Deposit Funds</DefaultButton>
+          <DefaultButton href="/dashboard/addFriends">Add Friends</DefaultButton>
           <PrimaryButton href="/"> About </PrimaryButton>
         </Stack>
       </Stack.Item>
 
       <Stack.Item grow>
         <Switch>
+          <Route path={`${path}/addFriends`}>
+            <AddFriends />
+          </Route>
           <Route path={`${path}/addFunds`}>
             <AddFunds />
           </Route>

@@ -40,12 +40,12 @@ export const AddFriends: React.FunctionComponent = () => {
       return
     }
     const data = await getFriendRequests(username);
-    setAllRequests(data)
+    setAllRequests(data.requests)
   }
 
   useEffect(() => {
     getRequests()
-  })
+  }, [])
 
   const onChangeUsername = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
     if (newValue) {
@@ -64,6 +64,7 @@ export const AddFriends: React.FunctionComponent = () => {
         return;
       }
       sendFriendRequest(username, friendUsername, parseInt(local_key));
+      setFriendUsername("")
     }
     else {
       globalEmitter.emit("notification", { type: "error", message: "Please enter a valid username to send a friend request to." })

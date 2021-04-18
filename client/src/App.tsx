@@ -31,9 +31,6 @@ export const App: React.FunctionComponent = () => {
         <Route path="/users">
           <Users />
         </Route>
-        <Route path="/addFriends">
-          <AddFriends />
-        </Route>
         <Route path="/">
           <HomePage />
         </Route>
