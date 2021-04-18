@@ -43,7 +43,11 @@ export const AddFriends: React.FunctionComponent = () => {
       return
     }
     const data = await getFriendRequests(username);
-    const output = data.requests.map( async (item:FriendRequest) => ({...item, decryptedAddress: await decryptAddress(item.sender, item.address)}));
+    const output: FriendRequest[] = []
+    for (let i = 0; i < data.requests.length; i++) {
+      const item: FriendRequest = data.requests[i]
+      output.push({ ...item, decryptedAddress: (await decryptAddress(item.sender, item.address)) })
+    }
     setAllRequests(output)
   }
 
@@ -59,14 +63,16 @@ export const AddFriends: React.FunctionComponent = () => {
     }
   }
 
-  const decryptAddress = async(sender:string, address:string) => {
+  const decryptAddress = async (sender: string, address: string) => {
     const private_key = localStorage.getItem("private_key");
     const friendsPublicKey = await getPublicKey(sender);
     const prime = await getPrimeNumber();
-    if(private_key){
-      const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
-      const decryptedTerra = CryptoJS.AES.decrypt(address, shared.toString()).toString();
+    if (!private_key) {
+      return
     }
+    const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
+    return CryptoJS.AES.decrypt(address, shared.toString()).toString();
+    
   }
 
   const handleFriendRequest = async () => {
@@ -78,7 +84,7 @@ export const AddFriends: React.FunctionComponent = () => {
         return;
       }
       const friendsPublicKey = await getPublicKey(friendUsername);
-      if (!friendsPublicKey.publicKey){
+      if (!friendsPublicKey.publicKey) {
         globalEmitter.emit("notification", { type: "error", message: "The username you have input is invalid." });
         return;
       }
