@@ -26,6 +26,7 @@ import { AddFriends } from "../addfriends/AddFriends";
 import { SendMoney } from "../sendMoney/SendMoney";
 import { globalStyles } from "../../assets/styles";
 import { WithdrawFunds } from "../withdrawfunds/WithdrawFunds";
+import { History } from "../history/History";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 1 };
@@ -198,7 +199,9 @@ export const Dashboard: React.FunctionComponent = () => {
           <Route path={`${path}/withdraw`}>
             <WithdrawFunds />
           </Route>
-
+          <Route path={`${path}/History`}>
+            <History />
+          </Route>
           <Route path={`${path}/addFriends`}>
             <AddFriends />
           </Route>

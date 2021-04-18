@@ -32,26 +32,78 @@ const terra = new LCDClient({
 export const History: React.FunctionComponent = () => {
   const history = useHistory();
   const [friendUsername, setFriendUsername] = useState<string>("")
-  const [mnemonic, setMnemonicKey] = useState<string>("")
-  const [allRequests, setAllRequests] = useState<FriendRequest[]>([])
   const bigInt = require("big-integer");
   const CryptoJS = require("crypto-js");
+  const [incoming, setIncoming] = useState([]);
+  const [outgoing, setOutgoing] = useState([]);
+  
+  const populateHistory = async (address:string, transactions:[]) => {
+    const incomingTx:any = [];
+    const outgoingTx:any = [];
+    transactions.forEach((element:any) => {
+      if(element){
+        // Check if transaction is successful
+        const failedTx = element.raw_log.includes('failed to execute');
+        if(!failedTx){
+          let memo = element.tx.value.memo;
 
+          if(memo.includes('Terra-Pay')){
+            //Parse
+            const amountUsd = element.tx.value.msg[0].value.amount[0].amount/1000000;
+            const fromAddress = element.tx.value.msg[0].value.from_address;
+            const toAddress = element.tx.value.msg[0].value.to_address;
+
+            memo = memo.substring(11).split('~');
+            let parties = memo[0].split(' ');
+            let message = memo[1];
+            let from = parties[1];
+            let to = parties[3];
+
+            //Outgoing tx
+            if(fromAddress == address){
+              outgoingTx.push({ 'username': to, 'amount': amountUsd, 'message': message });
+            }
+            else{ //Incoming tx
+              incomingTx.push({ 'username': from, 'amount': amountUsd, 'message': message });
+            }
+          }
+        }
+      }
+    });
+    setIncoming(incomingTx);
+    setOutgoing(outgoingTx);
+  }
 
   useEffect(() => {
-    const mnemonicKey = localStorage.getItem('mnemonic');
-    if(mnemonicKey)
-      setMnemonicKey(mnemonicKey);
+    const address = localStorage.getItem('address');
+    if(address){
+      fetch('https://tequila-fcd.terra.dev/v1/txs?offset=0&limit=100&account=' + address + '&chainId=tequila-0004')
+      .then(response => response.json())
+      .then(data => populateHistory(address, data.txs));
+    }
   }, [])
-
+  
   return (
     <Stack>
       <Text variant="small" styles={boldStyle}>
         Your address: {localStorage.getItem("address")}
       </Text>
       <Text variant="xxLarge" styles={boldStyle}>
-        History
+        Outgoing Transactions
       </Text>
+      {outgoing.map(
+                  (transaction: { username: string; amount: number; message: string }) => (
+                    <Text>To: {transaction.username}, Amount: {transaction.amount}, Message: {transaction.message}</Text>
+                  )
+                )}
+      <Text variant="xxLarge" styles={boldStyle}>
+        Incoming Transactions
+      </Text> 
+        {incoming.map(
+                  (transaction: { username: string; amount: number; message: string }) => (
+                    <Text>From: {transaction.username}, Amount: {transaction.amount}, Message: {transaction.message}</Text>
+                  )
+                )}
     </Stack>
   );
 };
