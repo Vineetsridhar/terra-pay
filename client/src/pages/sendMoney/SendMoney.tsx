@@ -86,10 +86,11 @@ export const SendMoney: React.FunctionComponent = () => {
       return
     }
     const responses = await getFriendResponses(username);
+    console.log("responses", responses)
     let friends = JSON.parse(localStorage.getItem('friends') ?? "[]")
     for (let i = 0; i < responses.responses.length; i++) {
       const curr = responses.responses[i];
-      const address = decryptAddress(curr["sender"], curr["address"])
+      const address = await decryptAddress(curr["sender"], curr["address"])
       friends.push({ username: curr["sender"], address })
       denyFriendRequest(curr["sender"], curr["recipient"])
     }
