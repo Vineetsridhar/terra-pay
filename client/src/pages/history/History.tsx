@@ -27,6 +27,7 @@ import {
   sendResponse,
   denyFriendRequest,
 } from "../../helpers/network";
+import { send } from "node:process";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 interface FriendRequest {
@@ -87,11 +88,13 @@ export const History: React.FunctionComponent = () => {
                 (friend: { username: string; address: string }) =>
                   friend.address == fromAddress
               );
-              incomingTx.push({
-                username: sender.username,
-                amount: amountUsd,
-                message: memo,
-              });
+              if (sender) {
+                incomingTx.push({
+                  username: sender.username,
+                  amount: amountUsd,
+                  message: memo,
+                });
+              }
             }
           }
         }

@@ -38,7 +38,7 @@ import ReactLoading from "react-loading";
 
 const CryptoJS = require("crypto-js");
 
-const boldStyle = { root: {} };
+const boldStyle = { root: {fontFamily: "'Comfortaa', cursive",} };
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
   chainID: "tequila-0004",
@@ -303,6 +303,7 @@ export const SendMoney: React.FunctionComponent = () => {
                               backgroundColor: globalStyles.colors.background2,
                               borderWidth: 2,
                               borderRadius: 2,
+                              fontFamily: "'Comfortaa', cursive",
                               padding: 2,
                             },
                             primaryText: {
