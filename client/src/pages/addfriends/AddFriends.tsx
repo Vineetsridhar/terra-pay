@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
   Stack,
   Text,
@@ -14,19 +14,38 @@ import { Separator } from "@fluentui/react/lib/Separator";
 import "./AddFriends.css";
 import { globalEmitter } from "../../helpers/emitter";
 import { LCDClient, Coin, MnemonicKey } from "@terra-money/terra.js";
-import logo from "../homepage/logo.svg";
+import {useHistory} from 'react-router-dom'
+import { getFriendRequests } from "../../helpers/network";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
-const stackTokens: IStackTokens = { childrenGap: 15 };
-
+interface FriendRequest {
+  sender:string, 
+  recipient:string, 
+  value:number
+}
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
   chainID: "tequila-0004",
 });
 
 export const AddFriends: React.FunctionComponent = () => {
-
+  const history = useHistory();
   const [friendUsername, setFriendUsername] = useState<string>("")
+  const [allRequests, setAllRequests] = useState<FriendRequest[]>([])
+
+  const getRequests = async () => {
+    const username = localStorage.getItem("username");
+    if(!username){
+      history.push('/')
+      return
+    }
+    const data = await getFriendRequests(username);
+    setAllRequests(data)
+  }
+
+  useEffect(() => {
+    getRequests()
+  })
 
   const onChangeUsername = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
     if (newValue) {
@@ -52,6 +71,11 @@ export const AddFriends: React.FunctionComponent = () => {
       </Text>
       <TextField label="Username" onChange={onChangeUsername} />
       <PrimaryButton onClick={sendFriendRequest}>Send request</PrimaryButton>
+      {allRequests.map(req => (
+        <div>
+          {`${req.sender} ${req.value}`}
+        </div>
+      ))}
     </Stack>
   );
 };

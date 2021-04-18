@@ -40,3 +40,8 @@ export async function fundAccount(amount:number, address:string){
     const endpoint = getEndpoint('fund');
     return makeCall(endpoint, {amount, address}).then(response => response.json());
 }
+
+export async function getFriendRequests(username:string){
+    const endpoint = getEndpoint('getFriendRequests');
+    return makeCall(endpoint, {username}).then(response => response.json());
+}
