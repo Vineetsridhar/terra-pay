@@ -70,9 +70,9 @@ export const AddFriends: React.FunctionComponent = () => {
     if (!private_key) {
       return
     }
+
     const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
-    return CryptoJS.AES.decrypt(address, shared.toString()).toString();
-    
+    return CryptoJS.AES.decrypt(address, shared.toString()).toString(CryptoJS.enc.Utf8);
   }
 
   const handleFriendRequest = async () => {
