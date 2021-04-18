@@ -16,6 +16,7 @@ import { globalEmitter } from "../../helpers/emitter";
 import { LCDClient, Coin, MnemonicKey } from "@terra-money/terra.js";
 import { useHistory } from 'react-router-dom'
 import { getFriendRequests, sendFriendRequest, getPublicKey, getPrimeNumber, sendResponse, denyFriendRequest } from "../../helpers/network";
+import { send } from "node:process";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 interface FriendRequest {
@@ -70,7 +71,9 @@ export const History: React.FunctionComponent = () => {
               const sender = friends.find(
                 (friend: { username: string, address: string }) => friend.address == fromAddress
               );
-              incomingTx.push({ 'username': sender.username, 'amount': amountUsd, 'message': memo });
+              if(sender){
+                incomingTx.push({ 'username': sender.username, 'amount': amountUsd, 'message': memo });
+              }
             }
           }
         }
