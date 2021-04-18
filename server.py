@@ -91,6 +91,18 @@ def sendResponse():
 
     return {"success":True}
 
+@APP.route('/denyRequest', methods=['POST'])
+@cross_origin() 
+def initiateRequest():
+    data = request.json
+    if "sender" not in data or "recipient":
+        return make_error_block("Params missing")
+
+    cur.execute('DELETE FROM friend_request WHERE sender="%s" and recipient="%s";' %  (data["sender"], data["recipient"]))
+    con.commit()
+
+    return {"success":True}
+
 @APP.route('/isUsernameUnique', methods=['POST'])
 @cross_origin() 
 def isUsernameUnique():
