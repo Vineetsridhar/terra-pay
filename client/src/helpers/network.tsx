@@ -31,7 +31,7 @@ export async function isUsernameUnique(username:string){
     return makeCall(endpoint, {username}).then(response => response.json());
 }
 
-export async function getPaymentIntent(amount:number, paymentMethod:any){
+export async function getPaymentIntent(amount:number){
     const endpoint = getEndpoint('payment');
-    return makeCall(endpoint, {amount, paymentMethod}).then(response => response.json());
+    return makeCall(endpoint, {amount}).then(response => response.json());
 }
