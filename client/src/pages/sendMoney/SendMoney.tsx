@@ -21,6 +21,7 @@ import { LCDClient, Coin, MnemonicKey } from "@terra-money/terra.js";
 import { useHistory } from "react-router-dom";
 import { getFriendRequests, sendFriendRequest } from "../../helpers/network";
 import { Scrollbars } from "react-custom-scrollbars";
+import { globalStyles } from "../../assets/styles";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 interface FriendRequest {
@@ -34,14 +35,14 @@ const terra = new LCDClient({
 });
 
 const friends = [
-  "qwe",
-  "sdf",
-  "cb",
-  "cvb",
-  "rtu",
-  "dfg",
-  "qwe",
-  "sdf",
+  "qsdffffffwe",
+  "sdkdjnhksdhgf",
+  "cbdlkmsdlkhg",
+  "cvbdfljkgnmdfg",
+  "rtudkfjgndfg",
+  "dfgfdjgnkdfg",
+  "qwdkfjgne",
+  "sddfgsrtjsf",
   "cb",
   "cvb",
   "rtu",
@@ -141,14 +142,85 @@ export const SendMoney: React.FunctionComponent = () => {
             alignItems: "center",
             display: "flex",
             justifyContent: "flex-end",
-            overflow: "hidden",
+
             width: "40%",
+            overflow: "hidden",
+            padding: "50px",
+            height: "100%",
+          },
+        }}
+      >
+        <Scrollbars autoHeight autoHeightMin={600}>
+          <Stack
+            styles={{
+              root: {
+                alignItems: "flex-end",
+                display: "flex",
+                justifyContent: "flex-end",
+                overflow: "hidden",
+                height: "100%",
+              },
+            }}
+          >
+            {friends.map((friendName) => (
+              <Stack.Item
+                styles={{
+                  root: {
+                    padding: 5,
+                  },
+                }}
+              >
+                <div
+                  style={{
+                    width: 200,
+                    border: `2px solid ${globalStyles.colors.emphasis}`,
+                    boxShadow: "0 0 2px #9ecaed",
+                    borderRadius: 10,
+                    borderTopLeftRadius: 50,
+                    borderBottomLeftRadius: 50,
+                    overflow: "hidden",
+                    backgroundColor: `${
+                      selectedFriend === friendName ? "grey" : "white"
+                    }`,
+                  }}
+                  onClick={() => {
+                    setSelectedFriend(friendName);
+                  }}
+                >
+                  <Persona
+                    text={friendName}
+                    size={PersonaSize.size56}
+                    styles={{
+                      root: {
+                        backgroundColor: globalStyles.colors.background2,
+                        borderWidth: 2,
+                        borderRadius: 2,
+                        padding: 2,
+                      },
+                      primaryText: {
+                        color: globalStyles.colors.text,
+                      },
+                    }}
+                  />
+                </div>
+              </Stack.Item>
+            ))}
+          </Stack>
+        </Scrollbars>
+      </Stack.Item>
+
+      <Stack.Item
+        styles={{
+          root: {
+            alignItems: "center",
+            display: "flex",
+            justifyContent: "flex-end",
+            overflow: "hidden",
             height: "100%",
           },
         }}
       >
         <Stack
-          horizontal
           styles={{
             root: {
               alignItems: "center",
@@ -156,7 +228,7 @@ export const SendMoney: React.FunctionComponent = () => {
             },
           }}
         >
-          <Text variant="xxLarge" styles={boldStyle}>
+          <Text variant="mega" styles={boldStyle}>
             Send
           </Text>
           <SpinButton
@@ -171,30 +243,8 @@ export const SendMoney: React.FunctionComponent = () => {
             decrementButtonAriaLabel="Decrease value by 2"
             styles={styles}
           />
-          <Text
-            variant="xxLarge"
-            styles={{
-              root: { fontWeight: FontWeights.semibold, whiteSpace: "nowrap" },
-            }}
-          >
-            To:
-          </Text>
-        </Stack>
-      </Stack.Item>
-      <Stack.Item
-        styles={{
-          root: {
-            alignItems: "center",
-            display: "flex",
-            justifyContent: "flex-begin",
-            overflow: "hidden",
-            padding: "50px",
-            height: "100%",
-          },
-        }}
-      >
-        <Scrollbars autoHeight autoHeightMin={600}>
           <Stack
+            horizontal
             styles={{
               root: {
                 alignItems: "center",
@@ -202,42 +252,69 @@ export const SendMoney: React.FunctionComponent = () => {
                 justifyContent: "center",
                 overflow: "hidden",
                 height: "100%",
-                minWidth: 200,
+                minHeight: "200px",
               },
             }}
           >
-            {friends.map((friendName) => (
-              <Stack.Item
-                styles={{
-                  root: {
-                    padding: 5,
-                  },
+            <Text
+              variant="mega"
+              styles={{
+                root: {
+                  fontWeight: FontWeights.semibold,
+                  whiteSpace: "nowrap",
+                },
+              }}
+            >
+              To:
+            </Text>
+            {selectedFriend && (
+              <div
+                style={{
+                  width: 200,
+                  border: `2px solid ${globalStyles.colors.emphasis}`,
+                  boxShadow: "0 0 2px #9ecaed",
+                  borderRadius: 50,
+                  overflow: "hidden",
+                  backgroundColor: "white",
+                  marginTop: "1em",
+                  marginLeft: "1em",
                 }}
               >
-                <div
-                  style={{
-                    width: 100,
-                    border: "3px solid rgb(0, 120, 212)",
-                    boxShadow: "0 0 10px #9ecaed",
-                    borderRadius: 10,
-                    backgroundColor: `${
-                      selectedFriend === friendName ? "grey" : "white"
-                    }`,
-                    padding: 8,
+                <Persona
+                  text={selectedFriend}
+                  size={PersonaSize.size56}
+                  styles={{
+                    root: {
+                      backgroundColor: globalStyles.colors.background2,
+                      borderWidth: 2,
+                      borderRadius: 2,
+                      padding: 2,
+                    },
+                    primaryText: {
+                      color: globalStyles.colors.text,
+                    },
                   }}
-                  onClick={() => {
-                    setSelectedFriend(friendName);
-                  }}
-                >
-                  <Persona text={friendName} size={PersonaSize.size48} />
-                </div>
-              </Stack.Item>
-            ))}
+                />
+              </div>
+            )}
           </Stack>
-        </Scrollbars>
-      </Stack.Item>
-      <Stack.Item>
-        <PrimaryButton disabled={selectedFriend === ""}>Send</PrimaryButton>
+          <PrimaryButton
+            styles={{ root: { height: "100px", width: "300px" } }}
+            disabled={selectedFriend === ""}
+          >
+            <Text
+              variant="mega"
+              styles={{
+                root: {
+                  fontWeight: FontWeights.semibold,
+                  whiteSpace: "nowrap",
+                },
+              }}
+            >
+              Pay
+            </Text>
+          </PrimaryButton>
+        </Stack>
       </Stack.Item>
     </Stack>
   );
