@@ -1,5 +1,5 @@
 export function getEndpoint(path: string) {
-    return `http://localhost:8081/${path}`;
+    return `https://nameless-eyrie-95774.herokuapp.com/${path}`;
 }
 
 function getAuthToken() {
