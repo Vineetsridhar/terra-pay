@@ -82,17 +82,18 @@ export default function CreateAccount() {
             <Text variant="xxLarge" styles={globalStyles.bold}>
                 Create an account
             </Text>
-            <TextField label="Your name" value={name} onChange={onChangeName} />
-            <TextField label="Username" value={username} onChange={onChangeUsername} />
+            <TextField value={name} onChange={onChangeName} placeholder="Your name"/>
+            <TextField  value={username} onChange={onChangeUsername} placeholder="Your username"/>
+            <br />
 
             {!mnemonicKey ? <PrimaryButton onClick={submit}>Submit</PrimaryButton> : null}
 
             {
                 mnemonicKey ?
                     <>
-                        <p>Write down this key. You will need it to recover your account:</p>
-                        <p>{mnemonicKey}</p>
-                        <PrimaryButton onClick={() => history.push('/dashboard')}>Next</PrimaryButton>
+                        <h2 style={{color:'white'}}>Write down this key. You will need it to recover your account:</h2>
+                        <h1 style={{color:'white'}}>{mnemonicKey}</h1>
+                        <PrimaryButton onClick={() => history.push('/dashboard/addFunds')}>Next</PrimaryButton>
                     </> : null
             }
         </div>

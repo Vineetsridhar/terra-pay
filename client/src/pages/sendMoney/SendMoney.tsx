@@ -34,9 +34,11 @@ import {
 import { Scrollbars } from "react-custom-scrollbars";
 import { globalStyles } from "../../assets/styles";
 import bigInt from "big-integer";
+import ReactLoading from 'react-loading';
+
 const CryptoJS = require("crypto-js");
 
-const boldStyle = { root: { fontWeight: FontWeights.semibold } };
+const boldStyle = { root: {} };
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
   chainID: "tequila-0004",
@@ -54,6 +56,8 @@ export const SendMoney: React.FunctionComponent = () => {
   >([]);
   const [amount, setAmount] = useState("");
 
+  const [loading, setLoading] = useState(false)
+
   const prefix = "$ ";
   const min = 0;
   // By default the field grows to fit available width. Constrain the width instead.
@@ -63,20 +67,21 @@ export const SendMoney: React.FunctionComponent = () => {
   };
   const stackTokens: IStackTokens = { childrenGap: 20 };
 
-  useEffect(() => {
-    async function getBalance() {
-      const address = localStorage.getItem("address");
-      if (!address) {
-        history.push("/");
-        return;
-      }
-      const coinBalances = await terra.bank.balance(address);
-      const usdBalance = coinBalances.get("uusd");
-      if (usdBalance) {
-        const balance = parseFloat(usdBalance.amount.toString()) / 1000000;
-        setBalance(balance);
-      }
+  async function getBalance() {
+    const address = localStorage.getItem("address");
+    if (!address) {
+      history.push("/");
+      return;
     }
+    const coinBalances = await terra.bank.balance(address);
+    const usdBalance = coinBalances.get("uusd");
+    if (usdBalance) {
+      const balance = parseFloat(usdBalance.amount.toString()) / 1000000;
+      setBalance(balance);
+    }
+  }
+
+  useEffect(() => {
     getBalance();
     const mnemonic = localStorage.getItem("mnemonic");
     if (mnemonic) setMnemonicKey(mnemonic);
@@ -108,7 +113,7 @@ export const SendMoney: React.FunctionComponent = () => {
     let friends = JSON.parse(localStorage.getItem("friends") ?? "[]");
     for (let i = 0; i < responses.responses.length; i++) {
       const curr = responses.responses[i];
-      const address = decryptAddress(curr["sender"], curr["address"]);
+      const address = await decryptAddress(curr["sender"], curr["address"]);
       friends.push({ username: curr["sender"], address });
       denyFriendRequest(curr["sender"], curr["recipient"]);
     }
@@ -121,20 +126,19 @@ export const SendMoney: React.FunctionComponent = () => {
   }, []);
 
   const sendMoney = async () => {
+    setLoading(true)
     const friends = JSON.parse(localStorage.getItem("friends") ?? "[]");
-    console.log(friends);
     const recipient = friends.find(
       (friend: { username: string }) => friend.username == selectedFriend
     );
-    const amt = 5;
+    const amt = parseFloat(amount);
     if (isNaN(amt)) {
       globalEmitter.emit("notification", {
         type: "error",
-        message: "Please enter a vlid number",
+        message: "Please enter a valid number",
       });
       return;
     }
-    console.log("b", balance);
 
     if (amt - 0.3 <= balance && mnemonic != "") {
       // Try to process transaction
@@ -142,12 +146,13 @@ export const SendMoney: React.FunctionComponent = () => {
       const localAddress = localStorage.getItem("address");
       const username = localStorage.getItem("username");
       const wallet = terra.wallet(mk);
-      console.log(localAddress, recipient);
+
       // create a simple message that moves coin balances
       if (localAddress && username) {
         const send = new MsgSend(localAddress, recipient["address"], {
           uusd: amt * 1000000,
         });
+        console.log(send)
         wallet
           .createAndSignTx({
             msgs: [send],
@@ -158,9 +163,25 @@ export const SendMoney: React.FunctionComponent = () => {
             return terra.tx.broadcast(tx);
           })
           .then((result) => {
+            setAmount("")
+            getBalance()
+            setSelectedFriend("")
+            setLoading(false)
+            globalEmitter.emit("notification", {
+              type: "success",
+              message: "Your money has been sent over the blockchain!",
+            });
             console.log(`TX hash: ${result.txhash}`);
           })
-          .catch((err) => console.log("ERRRR", err));
+          .catch((err) => {
+            setLoading(false)
+            globalEmitter.emit("notification", {
+              type: "error",
+              message: "There was an error sending your money",
+            });
+
+            console.log("ERRRR", err)
+          });
       }
     } else {
       console.log("error");
@@ -180,6 +201,9 @@ export const SendMoney: React.FunctionComponent = () => {
           },
         }}
       >
+        <Text variant="xxLarge" styles={boldStyle}>
+          Your Balance: ${balance.toFixed(2)}
+        </Text>
         <Stack
           horizontal
           styles={{
@@ -209,6 +233,7 @@ export const SendMoney: React.FunctionComponent = () => {
                 borderRadius: 10,
                 borderTopLeftRadius: 50,
                 borderBottomLeftRadius: 50,
+                fontFamily: "inherit"
               },
             }}
           >
@@ -216,7 +241,7 @@ export const SendMoney: React.FunctionComponent = () => {
               <Stack
                 styles={{
                   root: {
-                    alignItems: "flex-end",
+                    alignItems: "center",
                     display: "flex",
                     justifyContent: "flex-end",
                     overflow: "hidden",
@@ -245,11 +270,10 @@ export const SendMoney: React.FunctionComponent = () => {
                           borderTopLeftRadius: 50,
                           borderBottomLeftRadius: 50,
                           overflow: "hidden",
-                          backgroundColor: `${
-                            selectedFriend === friend.username
-                              ? "grey"
-                              : "white"
-                          }`,
+                          backgroundColor: `${selectedFriend === friend.username
+                            ? "grey"
+                            : "white"
+                            }`,
                         }}
                         onClick={() => {
                           setSelectedFriend(friend.username);
@@ -274,6 +298,10 @@ export const SendMoney: React.FunctionComponent = () => {
                     </Stack.Item>
                   )
                 )}
+                {friends.length == 0 &&
+                  <Text variant="large" styles={{ root: { textAlign: 'center', paddingTop: 16 } }}>
+                    Add new friends before you can send money
+                </Text>}
               </Stack>
             </Scrollbars>
           </Stack.Item>
@@ -299,7 +327,6 @@ export const SendMoney: React.FunctionComponent = () => {
                   alignItems: "center",
                   display: "flex",
                   justifyContent: "center",
-                  alignItems: "center",
                   overflow: "hidden",
                 },
               }}
@@ -321,7 +348,9 @@ export const SendMoney: React.FunctionComponent = () => {
                 placeholder="Amount"
                 value={amount}
                 onChange={(value, text) => {
-                  setAmount(text);
+                  if (text) {
+                    setAmount(text);
+                  } else setAmount("")
                 }}
               />
               <Stack
@@ -337,17 +366,19 @@ export const SendMoney: React.FunctionComponent = () => {
                   },
                 }}
               >
-                <Text
-                  variant="mega"
-                  styles={{
-                    root: {
-                      fontWeight: FontWeights.semibold,
-                      whiteSpace: "nowrap",
-                    },
-                  }}
-                >
-                  To:
+                {selectedFriend &&
+                  <Text
+                    variant="mega"
+                    styles={{
+                      root: {
+                        fontWeight: FontWeights.semibold,
+                        whiteSpace: "nowrap",
+                      },
+                    }}
+                  >
+                    To:
                 </Text>
+                }
                 {selectedFriend && (
                   <div
                     style={{
@@ -379,22 +410,25 @@ export const SendMoney: React.FunctionComponent = () => {
                   </div>
                 )}
               </Stack>
-              <PrimaryButton
-                styles={{ root: { height: "100px", width: "300px" } }}
-                disabled={selectedFriend === ""}
-              >
-                <Text
-                  variant="mega"
-                  styles={{
-                    root: {
-                      fontWeight: FontWeights.semibold,
-                      whiteSpace: "nowrap",
-                    },
-                  }}
+              {loading ? <ReactLoading type={"spin"} color={"white"} height={100} width={100} /> :
+                <PrimaryButton
+                  styles={{ root: { height: "100px", width: "300px" } }}
+                  disabled={selectedFriend === ""}
+                  onClick={sendMoney}
                 >
-                  Pay
+                  <Text
+                    variant="mega"
+                    styles={{
+                      root: {
+                        fontWeight: FontWeights.semibold,
+                        whiteSpace: "nowrap",
+                      },
+                    }}
+                  >
+                    Pay
                 </Text>
-              </PrimaryButton>
+                </PrimaryButton>
+              }
             </Stack>
           </Stack.Item>
         </Stack>

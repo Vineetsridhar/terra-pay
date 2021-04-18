@@ -8,8 +8,9 @@ import {
 import { PrimaryButton, Stack, Text, TextField } from "office-ui-fabric-react";
 import { globalEmitter } from "../../helpers/emitter";
 import { fundAccount, getPaymentIntent } from "../../helpers/network";
-
+import {useHistory} from 'react-router-dom';
 export const CheckoutForm = () => {
+  const history = useHistory();
   const stripe = useStripe();
   const elements = useElements();
   const options = {
@@ -98,7 +99,13 @@ export const CheckoutForm = () => {
           message: "Payment was not successful",
         });
       } else {
-        fundAccount(amountValidated, localStorage.getItem("address"));
+        fundAccount(amountValidated, localStorage.getItem("address")).then(value => {
+          globalEmitter.emit("notification", {
+            type: "success",
+            message: "Payment was completed",
+          });
+          history.push('/dashboard/sendMoney')
+        })
       }
     }
   };

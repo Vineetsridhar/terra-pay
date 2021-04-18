@@ -57,7 +57,7 @@ export const ImportAccount: React.FunctionComponent = () => {
         Please enter your 12-word seed phrase you received when creating a terra
         wallet (space between words).
       </Text>
-      <TextField label="Mnemonic" onChange={onChangeMnemonic} multiline rows={3} />
+      <TextField label="Mnemonic" onChange={onChangeMnemonic} multiline rows={3} placeholder="12 Word seed phrase" />
       <PrimaryButton onClick={submit}>Import</PrimaryButton>
     </Stack>
   );
