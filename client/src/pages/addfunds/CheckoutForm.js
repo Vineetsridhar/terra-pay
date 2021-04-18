@@ -34,13 +34,35 @@ export const CheckoutForm = () => {
     setValidated(true)
   }
 
-  const onClickPay = () => {
+  const onClickPay = async () => {
     const {error, paymentMethod} = await stripe.createPaymentMethod({
       type: 'card',
       card: elements.getElement(CardElement),
     });
-    const paymentIntent = await getPaymentIntent(amountValidated, paymentMethod);
-    //Capture here
+    console.log(paymentMethod);
+    const client_secret = await getPaymentIntent(amountValidated, paymentMethod);
+    const {paymentIntent, error: confirmError} = await stripe.confirmCardPayment(
+      client_secret.clientSecret,
+      {payment_method: paymentMethod.id},
+      {handleActions: false}
+    );
+
+    if(confirmError){
+      console.log("error");
+    }
+    else{
+      if (paymentIntent.status === "requires_action") {
+        // Let Stripe.js handle the rest of the payment flow.
+        const {error} = await stripe.confirmCardPayment(client_secret.clientSecret);
+        if (error) {
+          console.log("Errorrr");
+        } else {
+          console.log("Success");
+        }
+      } else {
+        console.log("Success");
+      }
+    }
   }
 
   return (
