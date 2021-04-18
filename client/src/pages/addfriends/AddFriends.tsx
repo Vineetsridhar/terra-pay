@@ -70,12 +70,11 @@ export const AddFriends: React.FunctionComponent = () => {
     if (!private_key) {
       return
     }
-
     const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
     return CryptoJS.AES.decrypt(address, shared.toString()).toString(CryptoJS.enc.Utf8);
   }
 
-  const getSharedKey = async (friendUsername:string) => {
+  const getSharedKey = async (friendUsername: string) => {
     const private_key = localStorage.getItem("private_key");
     const username = localStorage.getItem("username");
     if (!username || !private_key) {
@@ -99,7 +98,10 @@ export const AddFriends: React.FunctionComponent = () => {
       const encryptedTerraAddress = CryptoJS.AES.encrypt(terraAddress, shared.toString()).toString();
       const username = localStorage.getItem("username");
 
-      sendFriendRequest(username!!, friendUsername, encryptedTerraAddress);
+      const result = await sendFriendRequest(username!!, friendUsername, encryptedTerraAddress);
+      if (result.success === false) {
+        globalEmitter.emit("notification", { type: "error", message: result.message });
+      } 
       setFriendUsername("")
     }
     else {
@@ -107,15 +109,15 @@ export const AddFriends: React.FunctionComponent = () => {
     }
   }
 
-  const acceptFriendRequest = async (sender:string, recipient:string, decryptedAddress:string) => {
+  const acceptFriendRequest = async (sender: string, recipient: string, decryptedAddress: string) => {
     const shared = await getSharedKey(recipient)
     sendResponse(sender, recipient, shared);
     const friends = JSON.parse(localStorage.getItem("friends") ?? "[]")
-    friends.push({username:sender, address:decryptedAddress});
+    friends.push({ username: sender, address: decryptedAddress });
     localStorage.setItem("friends", JSON.stringify(friends))
   }
 
-  const rejectFriendRequest = async (sender:string, recipient:string) => {
+  const rejectFriendRequest = async (sender: string, recipient: string) => {
     denyFriendRequest(sender, recipient);
     const output = allRequests.filter(item => item.sender !== sender)
     setAllRequests(output)
