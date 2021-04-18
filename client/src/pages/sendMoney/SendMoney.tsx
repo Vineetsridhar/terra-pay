@@ -17,20 +17,17 @@ import {
 import { Separator } from "@fluentui/react/lib/Separator";
 import "./SendMoney.css";
 import { globalEmitter } from "../../helpers/emitter";
-import { LCDClient, Coin, MnemonicKey } from "@terra-money/terra.js";
+import { LCDClient, Coin, MnemonicKey, Coins, MsgSend } from "@terra-money/terra.js";
 import { useHistory } from "react-router-dom";
 import { getFriendRequests, sendFriendRequest } from "../../helpers/network";
 import { Scrollbars } from "react-custom-scrollbars";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
-interface FriendRequest {
-  sender: string;
-  recipient: string;
-  value: number;
-}
 const terra = new LCDClient({
   URL: "https://tequila-lcd.terra.dev/",
   chainID: "tequila-0004",
+  gasPrices: new Coins({ uusd: 0.3 }),
+  gasAdjustment: 1.5
 });
 
 const friends = [
@@ -57,6 +54,8 @@ const friends = [
 export const SendMoney: React.FunctionComponent = () => {
   const history = useHistory();
   const [selectedFriend, setSelectedFriend] = useState("");
+  const [balance, setBalance] = useState<number>(0);
+  const [mnemonic, setMnemonicKey] = useState<string>("");
 
   const prefix = "$ ";
   const min = 0;
@@ -66,6 +65,56 @@ export const SendMoney: React.FunctionComponent = () => {
     root: { display: "flex", justifyContent: "center", padding: "10px" },
   };
 
+  useEffect(() => {
+    async function getBalance () {
+      const address = localStorage.getItem('address');
+      if(!address){
+        history.push('/');
+        return;
+      }
+      const coinBalances = await terra.bank.balance(address);
+      const usdBalance = coinBalances.get('uusd');
+      if(usdBalance){
+        const balance = parseFloat(usdBalance.amount.toString())/1000000;
+        setBalance(balance);
+      }
+    };
+    getBalance();
+    const mnemonic = localStorage.getItem('mnemonic');
+    if(mnemonic)
+      setMnemonicKey(mnemonic);
+  }, [])
+
+  const sendMoney = async (recipient:string, amount:number) => {
+    if (amount-0.3 >= balance && mnemonic != ""){
+      // Try to process transaction
+      const mk = new MnemonicKey({ mnemonic: mnemonic });
+      const localAddress = localStorage.getItem('address');
+      const username = localStorage.getItem('username');
+      const wallet = terra.wallet(mk);
+      // create a simple message that moves coin balances
+      if(localAddress && username){
+        const send = new MsgSend(
+          localAddress,
+          recipient,
+          { uusd: amount*1000000 }
+        );
+        wallet
+        .createAndSignTx({
+          msgs: [send],
+          memo: 'From' + username
+        })
+        .then(tx => terra.tx.broadcast(tx))
+        .then(result => {
+          console.log(`TX hash: ${result.txhash}`);
+        });
+
+      }
+    }
+    else{
+      // Total amount trying to send is greater than balance
+    }
+  }
   /** Remove the prefix or any other text after the numbers, or return undefined if not a number */
   const getNumericPart = (value: string): number | undefined => {
     const valueRegex = /^\$\ (\d+(\.\d+)?)/;

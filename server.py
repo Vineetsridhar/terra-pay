@@ -93,7 +93,7 @@ def sendResponse():
 
 @APP.route('/denyRequest', methods=['POST'])
 @cross_origin() 
-def initiateRequest():
+def denyRequest():
     data = request.json
     if "sender" not in data or "recipient":
         return make_error_block("Params missing")
