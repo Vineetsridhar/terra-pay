@@ -161,7 +161,7 @@ export const SendMoney: React.FunctionComponent = () => {
           </Text>
           <SpinButton
             label=""
-            defaultValue={prefix + "7"}
+            defaultValue={prefix + "0"}
             min={min}
             onValidate={onValidate}
             onIncrement={onIncrement}
@@ -237,7 +237,7 @@ export const SendMoney: React.FunctionComponent = () => {
         </Scrollbars>
       </Stack.Item>
       <Stack.Item>
-        <PrimaryButton>Send</PrimaryButton>
+        <PrimaryButton disabled={selectedFriend === ""}>Send</PrimaryButton>
       </Stack.Item>
     </Stack>
   );
