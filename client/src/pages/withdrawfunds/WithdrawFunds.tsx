@@ -9,7 +9,7 @@ import { Text } from "office-ui-fabric-react";
 const terra = new LCDClient({
     URL: "https://tequila-lcd.terra.dev/",
     chainID: "tequila-0004",
-    gasPrices: new Coins({ uusd: 0.3 }),
+    gasPrices: new Coins({ uusd: 0.5 }),
     gasAdjustment: 1.5,
 });
 
@@ -20,6 +20,7 @@ export function WithdrawFunds() {
     useEffect(() => {
         getBalance()
     }, [])
+
     async function getBalance() {
         const address = localStorage.getItem("address");
         if (!address) {
@@ -33,6 +34,18 @@ export function WithdrawFunds() {
             setBalance(balance);
         }
     }
+  const getTwoDecimalsBalance = () => {
+    if (balance) {
+      var with2Decimals = balance.toString().match(/^-?\d+(?:\.\d{0,2})?/);
+      if (with2Decimals?.length == 1)
+        return with2Decimals[0];
+      else
+        return balance;
+    }
+    else {
+      return 0;
+    }
+  }
 
     const sendMoney = async (amt: number) => {
         const mnemonic = localStorage.getItem('mnemonic');
@@ -87,7 +100,7 @@ export function WithdrawFunds() {
     return (
         <div style={{display:'flex', alignItems: 'center', flexDirection: 'column', justifyContent: 'center', height:'100%'}}>
             <Text variant="xxLarge">
-                Your Balance: ${balance.toFixed(2)}
+                Your Balance: ${getTwoDecimalsBalance()}
             </Text>
             <br/>
             <CheckoutForm deposit={false} callback={sendMoney} />
