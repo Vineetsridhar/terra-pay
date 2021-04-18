@@ -15,7 +15,7 @@ import "./AddFriends.css";
 import { globalEmitter } from "../../helpers/emitter";
 import { LCDClient, Coin, MnemonicKey } from "@terra-money/terra.js";
 import { useHistory } from 'react-router-dom'
-import { getFriendRequests, sendFriendRequest, getPublicKey, getPrimeNumber } from "../../helpers/network";
+import { getFriendRequests, sendFriendRequest, getPublicKey, getPrimeNumber, sendResponse, denyFriendRequest } from "../../helpers/network";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 interface FriendRequest {
@@ -75,32 +75,50 @@ export const AddFriends: React.FunctionComponent = () => {
     return CryptoJS.AES.decrypt(address, shared.toString()).toString(CryptoJS.enc.Utf8);
   }
 
+  const getSharedKey = async (friendUsername:string) => {
+    const private_key = localStorage.getItem("private_key");
+    const username = localStorage.getItem("username");
+    if (!username || !private_key) {
+      history.push('/');
+      return;
+    }
+    const friendsPublicKey = await getPublicKey(friendUsername);
+    if (!friendsPublicKey.publicKey) {
+      globalEmitter.emit("notification", { type: "error", message: "The username you have input is invalid." });
+      return;
+    }
+    const prime = await getPrimeNumber();
+    // Calculate shared secret
+    return bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
+  }
+
   const handleFriendRequest = async () => {
     if (friendUsername != "") {
-      const private_key = localStorage.getItem("private_key");
-      const username = localStorage.getItem("username");
-      if (!username || !private_key) {
-        history.push('/');
-        return;
-      }
-      const friendsPublicKey = await getPublicKey(friendUsername);
-      if (!friendsPublicKey.publicKey) {
-        globalEmitter.emit("notification", { type: "error", message: "The username you have input is invalid." });
-        return;
-      }
-      const prime = await getPrimeNumber();
-      // Calculate shared secret
-      const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
-
+      const shared = await getSharedKey(friendUsername)
       const terraAddress = localStorage.getItem("address");
       const encryptedTerraAddress = CryptoJS.AES.encrypt(terraAddress, shared.toString()).toString();
-      //console.log(encryptedTerraAddress);
-      sendFriendRequest(username, friendUsername, encryptedTerraAddress);
+      const username = localStorage.getItem("username");
+
+      sendFriendRequest(username!!, friendUsername, encryptedTerraAddress);
       setFriendUsername("")
     }
     else {
       globalEmitter.emit("notification", { type: "error", message: "Please enter a valid username to send a friend request to." })
     }
+  }
+
+  const acceptFriendRequest = async (sender:string, recipient:string, decryptedAddress:string) => {
+    const shared = await getSharedKey(recipient)
+    sendResponse(sender, recipient, shared);
+    const friends = JSON.parse(localStorage.getItem("friends") ?? "[]")
+    friends.push({username:sender, address:decryptedAddress});
+    localStorage.setItem("friends", JSON.stringify(friends))
+  }
+
+  const rejectFriendRequest = async (sender:string, recipient:string) => {
+    denyFriendRequest(sender, recipient);
+    const output = allRequests.filter(item => item.sender !== sender)
+    setAllRequests(output)
   }
 
   return (
@@ -113,6 +131,8 @@ export const AddFriends: React.FunctionComponent = () => {
       {allRequests.map(req => (
         <div>
           {`${req.sender} ${req.decryptedAddress}`}
+          <PrimaryButton onClick={() => acceptFriendRequest(req.recipient, req.sender, req.decryptedAddress)}>Accept</PrimaryButton>
+          <DefaultButton onClick={() => rejectFriendRequest(req.sender, req.recipient)}>Reject</DefaultButton>
         </div>
       ))}
     </Stack>
