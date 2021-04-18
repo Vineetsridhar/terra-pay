@@ -4,7 +4,7 @@ import { PrimaryButton, Text } from '@fluentui/react'
 import { globalStyles } from "../../assets/styles";
 import { TextField, MaskedTextField } from '@fluentui/react/lib/TextField';
 import "./CreateAccount.css";
-import { createNewUser, isUsernameUnique } from "../../helpers/network";
+import { createNewUser, isUsernameUnique, getPrimeNumber, getBaseNumber } from "../../helpers/network";
 import { globalEmitter } from "../../helpers/emitter";
 import { useHistory } from "react-router-dom";
 
@@ -21,6 +21,7 @@ export default function CreateAccount() {
     const [username, setUsername] = useState<string>("")
 
     const [mnemonicKey, setMnemonicKey] = useState<string>("")
+    const bigInt = require("big-integer");
 
     const onChangeName = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
         if (newValue) {
@@ -37,7 +38,7 @@ export default function CreateAccount() {
         }
     }
 
-    const createPrivateKey = () => {
+    const generatePrivateKey = async () => {
         const mk = new MnemonicKey();
         const wallet = terra.wallet(mk);
         const m = mk.mnemonic;
@@ -47,6 +48,13 @@ export default function CreateAccount() {
         localStorage.setItem("username", username);
         localStorage.setItem("private_key", private_key.toString());
         localStorage.setItem("mnemonic", mk.mnemonic);
+        const base = await getBaseNumber();
+        const prime = await getPrimeNumber();
+        console.log(private_key);
+        console.log(base.value);
+        console.log(prime.value);
+        const public_key = bigInt(base.value).modPow(private_key, prime.value);
+        return parseInt(public_key.toString());
     }
 
     const submit = async () => {
@@ -58,11 +66,11 @@ export default function CreateAccount() {
         try {
             const isUnique = await isUsernameUnique(username);
             if (isUnique.unique) {
-                const response = await createNewUser(username, name);
+                const public_key = await generatePrivateKey();
+                const response = await createNewUser(username, name, public_key);
                 if (response.success) {
                     globalEmitter.emit("notification", { type: "success", message: "User has been successfully registered" })
                     globalEmitter.emit("notification", { type: "info", message: "Creating private wallet" })
-                    createPrivateKey()
                 }
             } else {
                 globalEmitter.emit("notification", { type: "error", message: isUnique.message || "This username has already been registered" })
