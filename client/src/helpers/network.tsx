@@ -26,6 +26,11 @@ export async function sendFriendRequest(sender:string, recipient:string, address
     return makeCall(endpoint, {sender, recipient, address}).then(response => response.json());
 }
 
+export async function denyFriendRequest(sender:string, recipient:string){
+    const endpoint = getEndpoint('denyRequest');
+    return makeCall(endpoint, {sender, recipient}).then(response => response.json());
+}
+
 export async function sendResponse(sender:string, recipient:string, address:string){
     const endpoint = getEndpoint('sendResponse');
     return makeCall(endpoint, {sender, recipient, address}).then(response => response.json());
@@ -70,3 +75,4 @@ export async function getPrimeNumber(){
     const endpoint = getEndpoint('getPrimeNumber');
     return makeCall(endpoint, {}).then(response => response.json());
 }
+

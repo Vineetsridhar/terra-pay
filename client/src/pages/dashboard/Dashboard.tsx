@@ -84,8 +84,9 @@ export const Dashboard: React.FunctionComponent = () => {
           <Text variant="xxLarge" styles={boldStyle}>
             TerraPay
           </Text>
+         
           <Separator />
-
+          
           <DefaultButton href="/dashboard/addFunds">
             Deposit Funds
           </DefaultButton>

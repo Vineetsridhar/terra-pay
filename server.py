@@ -86,6 +86,9 @@ def sendResponse():
     data = request.json
     if "sender" not in data or "recipient" not in data or "address" not in data:
         return make_error_block("Params missing")
+        
+    cur.execute('DELETE FROM friend_request WHERE sender="%s" and recipient="%s";' %  (data["sender"], data["recipient"]))
+
     cur.execute('INSERT INTO friend_request (sender, recipient, address, response) VALUES ("%s", "%s", "%s", 1)' % (data["sender"], data["recipient"], data["address"]))
     con.commit()
 
@@ -95,7 +98,7 @@ def sendResponse():
 @cross_origin() 
 def denyRequest():
     data = request.json
-    if "sender" not in data or "recipient":
+    if "sender" not in data or "recipient" not in data:
         return make_error_block("Params missing")
 
     cur.execute('DELETE FROM friend_request WHERE sender="%s" and recipient="%s";' %  (data["sender"], data["recipient"]))
