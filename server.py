@@ -17,6 +17,8 @@ con = sqlite3.connect('users.db', check_same_thread=False)
 cur = con.cursor()
 
 cur.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(32), username VARCHAR(32));')
+cur.execute('CREATE TABLE IF NOT EXISTS friend_request (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), value INTEGER);')
+cur.execute('CREATE TABLE IF NOT EXISTS friend_response (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), address: VARCHAR(255), value INTEGER);')
 
 load_dotenv(find_dotenv())  
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
@@ -26,6 +28,52 @@ APP = Flask(__name__, static_folder='./build/static')
 
 def make_error_block(message):
     return {"success":False,"message":message}, 400
+
+
+#Diffie Hellmann
+@APP.route('/getBaseNumber', methods=['POST'])
+@cross_origin() 
+def getBaseNumber():
+    return {"success":True, "value": 101}
+
+@APP.route('/getBaseNumber', methods=['POST'])
+@cross_origin() 
+def getPrimeNumber():
+    return {"success":True, "value": 5003}
+
+@APP.route('/getFriendRequests', methods=['POST'])
+@cross_origin() 
+def getAllFriendRequests():
+    data = request.json
+    if "username" not in data:
+        return make_error_block("Params missing")
+    items = cur.execute("SELECT * FROM friend_request WHERE username='%s'" % data["username"])
+    output = [value for value in items]
+    return {"success":True, requests:output}
+
+@APP.route('/initiateRequest', methods=['POST'])
+@cross_origin() 
+def initiateRequest():
+    data = request.json
+    if "sender" not in data or "recipient" not in data or "value" not in data:
+        return make_error_block("Params missing")
+
+    cur.execute('INSERT INTO friend_request (sender, recipient, value) VALUES ("%s", "%s", "%s")' % (data["sender"], data["recipient"], data["value"]))
+    con.commit()
+
+    return {"success":True}
+
+@APP.route('/sendResponse', methods=['POST'])
+@cross_origin() 
+def sendResponse():
+    data = request.json
+    if "sender" not in data or "recipient" not in data or "value" not in data or "address" not in data:
+        return make_error_block("Params missing")
+
+    cur.execute('INSERT INTO friend_response (sender, recipient, value, address) VALUES ("%s", "%s", "%s")' % (data["sender"], data["recipient"], data["value"], data["address"]))
+    con.commit()
+
+    return {"success":True}
 
 @APP.route('/isUsernameUnique', methods=['POST'])
 @cross_origin() 
