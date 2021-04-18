@@ -37,7 +37,8 @@ export const SendMoney: React.FunctionComponent = () => {
   const [selectedFriend, setSelectedFriend] = useState("");
   const [balance, setBalance] = useState<number>(0);
   const [mnemonic, setMnemonicKey] = useState<string>("");
-  const [friends, setFriends] = useState<{username:string, address:string}[]>([])
+  const [friends, setFriends] = useState<{ username: string, address: string }[]>([])
+  const [amount, setAmount] = useState("")
 
   const prefix = "$ ";
   const min = 0;
@@ -48,25 +49,25 @@ export const SendMoney: React.FunctionComponent = () => {
   };
 
   useEffect(() => {
-    async function getBalance () {
+    async function getBalance() {
       const address = localStorage.getItem('address');
-      if(!address){
+      if (!address) {
         history.push('/');
         return;
       }
       const coinBalances = await terra.bank.balance(address);
       const usdBalance = coinBalances.get('uusd');
-      if(usdBalance){
-        const balance = parseFloat(usdBalance.amount.toString())/1000000;
+      if (usdBalance) {
+        const balance = parseFloat(usdBalance.amount.toString()) / 1000000;
         setBalance(balance);
       }
     };
     getBalance();
     const mnemonic = localStorage.getItem('mnemonic');
-    if(mnemonic)
+    if (mnemonic)
       setMnemonicKey(mnemonic);
   }, [])
-  
+
   const decryptAddress = async (sender: string, address: string) => {
     const private_key = localStorage.getItem("private_key");
     const friendsPublicKey = await getPublicKey(sender);
@@ -80,16 +81,16 @@ export const SendMoney: React.FunctionComponent = () => {
 
   const getResponses = async () => {
     const username = localStorage.getItem('username')
-    if(!username){
+    if (!username) {
       history.push('/')
       return
     }
     const responses = await getFriendResponses(username);
     let friends = JSON.parse(localStorage.getItem('friends') ?? "[]")
-    for(let i = 0; i < responses.responses.length; i++){
+    for (let i = 0; i < responses.responses.length; i++) {
       const curr = responses.responses[i];
       const address = decryptAddress(curr["sender"], curr["address"])
-      friends.push({username:curr["sender"], address})
+      friends.push({ username: curr["sender"], address })
       denyFriendRequest(curr["sender"], curr["recipient"])
     }
     localStorage.setItem('friends', JSON.stringify(friends))
@@ -100,90 +101,51 @@ export const SendMoney: React.FunctionComponent = () => {
     getResponses()
   }, [])
 
-  const sendMoney = async (recipient:string, amount:number) => {
-    if (amount-0.3 >= balance && mnemonic != ""){
+  const sendMoney = async () => {
+    const friends = JSON.parse(localStorage.getItem('friends') ?? "[]")
+    console.log(friends)
+    const recipient = friends.find((friend: { username: string }) => friend.username == selectedFriend);
+    const amt = 5
+    if (isNaN(amt)) {
+      globalEmitter.emit("notification", { type: "error", message: "Please enter a vlid number" });
+      return
+    }
+    console.log("b", balance)
+
+    if (amt - 0.3 <= balance && mnemonic != "") {
       // Try to process transaction
       const mk = new MnemonicKey({ mnemonic: mnemonic });
       const localAddress = localStorage.getItem('address');
       const username = localStorage.getItem('username');
       const wallet = terra.wallet(mk);
+      console.log(localAddress, recipient, )
       // create a simple message that moves coin balances
-      if(localAddress && username){
+      if (localAddress && username) {
         const send = new MsgSend(
           localAddress,
-          recipient,
-          { uusd: amount*1000000 }
+          recipient["address"],
+          { uusd: amt * 1000000 }
         );
         wallet
-        .createAndSignTx({
-          msgs: [send],
-          memo: 'From' + username
-        })
-        .then(tx => terra.tx.broadcast(tx))
-        .then(result => {
-          console.log(`TX hash: ${result.txhash}`);
-        });
+          .createAndSignTx({
+            msgs: [send],
+            memo: 'From' + username
+          })
+          .then(tx => {
+            console.log(tx)
+            return terra.tx.broadcast(tx)
+          })
+          .then(result => {
+            console.log(`TX hash: ${result.txhash}`);
+          }).catch((err) => console.log("ERRRR", err))
 
       }
     }
-    else{
-      // Total amount trying to send is greater than balance
+    else {
+      console.log("error")
     }
   }
-  /** Remove the prefix or any other text after the numbers, or return undefined if not a number */
-  const getNumericPart = (value: string): number | undefined => {
-    const valueRegex = /^\$\ (\d+(\.\d+)?)/;
-    if (valueRegex.test(value)) {
-      const numericValue = Number(value.replace(valueRegex, "$1"));
-      return isNaN(numericValue) ? undefined : numericValue;
-    }
-    return undefined;
-  };
 
-  /** Increment the value (or return nothing to keep the previous value if invalid) */
-  const onIncrement = (
-    value: string,
-    event?: React.SyntheticEvent<HTMLElement>
-  ): string | void => {
-    const numericValue = getNumericPart(value);
-    if (numericValue !== undefined) {
-      return prefix + String(numericValue + 1);
-    }
-  };
-
-  /** Decrement the value (or return nothing to keep the previous value if invalid) */
-  const onDecrement = (
-    value: string,
-    event?: React.SyntheticEvent<HTMLElement>
-  ): string | void => {
-    const numericValue = getNumericPart(value);
-    if (numericValue !== undefined) {
-      return prefix + String(Math.max(numericValue - 1, min));
-    }
-  };
-
-  /**
-   * Clamp the value within the valid range (or return nothing to keep the previous value
-   * if there's not valid numeric input)
-   */
-  const onValidate = (
-    value: string,
-    event?: React.SyntheticEvent<HTMLElement>
-  ): string | void => {
-    let numericValue = getNumericPart(value);
-    if (numericValue !== undefined) {
-      numericValue = Math.max(numericValue, min);
-      return prefix + String(numericValue);
-    }
-  };
-
-  /** This will be called after each change */
-  const onChange = (
-    event: React.SyntheticEvent<HTMLElement>,
-    value?: string
-  ): void => {
-    console.log("Value changed to " + value);
-  };
 
   return (
     <Stack
@@ -198,6 +160,10 @@ export const SendMoney: React.FunctionComponent = () => {
         },
       }}
     >
+      <Text variant="small" styles={boldStyle}>
+        Your address: {localStorage.getItem("address")}
+      </Text>
+
       <Stack.Item
         disableShrink
         styles={{
@@ -223,18 +189,9 @@ export const SendMoney: React.FunctionComponent = () => {
           <Text variant="xxLarge" styles={boldStyle}>
             Send
           </Text>
-          <SpinButton
-            label=""
-            defaultValue={prefix + "0"}
-            min={min}
-            onValidate={onValidate}
-            onIncrement={onIncrement}
-            onDecrement={onDecrement}
-            onChange={onChange}
-            incrementButtonAriaLabel="Increase value by 2"
-            decrementButtonAriaLabel="Decrease value by 2"
-            styles={styles}
-          />
+
+          <TextField label="Amount" value={amount} onChange={() => { }} />
+
           <Text
             variant="xxLarge"
             styles={{
@@ -270,7 +227,7 @@ export const SendMoney: React.FunctionComponent = () => {
               },
             }}
           >
-            {friends.map((friend:{username:string, address:string}) => (
+            {friends.map((friend: { username: string, address: string }) => (
               <Stack.Item
                 styles={{
                   root: {
@@ -280,13 +237,12 @@ export const SendMoney: React.FunctionComponent = () => {
               >
                 <div
                   style={{
-                    width: 100,
+                    width: 200,
                     border: "3px solid rgb(0, 120, 212)",
                     boxShadow: "0 0 10px #9ecaed",
                     borderRadius: 10,
-                    backgroundColor: `${
-                      selectedFriend === friend.username ? "grey" : "white"
-                    }`,
+                    backgroundColor: `${selectedFriend === friend.username ? "grey" : "white"
+                      }`,
                     padding: 8,
                   }}
                   onClick={() => {
@@ -301,7 +257,7 @@ export const SendMoney: React.FunctionComponent = () => {
         </Scrollbars>
       </Stack.Item>
       <Stack.Item>
-        <PrimaryButton disabled={selectedFriend === ""}>Send</PrimaryButton>
+        <PrimaryButton disabled={selectedFriend === ""} onClick={sendMoney}>Send</PrimaryButton>
       </Stack.Item>
     </Stack>
   );

@@ -6,7 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import Notification from './helpers/notifications';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-
+import "./index.css"
 // Inject some global styles
 mergeStyles({
   ':global(body,html,#root)': {

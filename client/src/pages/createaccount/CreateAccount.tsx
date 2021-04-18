@@ -50,9 +50,6 @@ export default function CreateAccount() {
         localStorage.setItem("mnemonic", mk.mnemonic);
         const base = await getBaseNumber();
         const prime = await getPrimeNumber();
-        console.log(private_key);
-        console.log(base.value);
-        console.log(prime.value);
         const public_key = bigInt(base.value).modPow(private_key, prime.value);
         return parseInt(public_key.toString());
     }
