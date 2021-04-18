@@ -21,6 +21,11 @@ async function makeCall(callName: string, callParams: any):Promise<any> {
     return fetch(callName, getCallParams(callParams));
 }
 
+export async function sendFriendRequest(sender:string, recipient:string, value:number){
+    const endpoint = getEndpoint('initiateRequest');
+    return makeCall(endpoint, {sender, recipient, value}).then(response => response.json());
+}
+
 export async function createNewUser(username:string, name:string){
     const endpoint = getEndpoint('newUser');
     return makeCall(endpoint, {username, name}).then(response => response.json());

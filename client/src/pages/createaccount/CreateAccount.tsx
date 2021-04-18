@@ -40,9 +40,12 @@ export default function CreateAccount() {
     const createPrivateKey = () => {
         const mk = new MnemonicKey();
         const wallet = terra.wallet(mk);
-        const m = mk.mnemonic
+        const m = mk.mnemonic;
         setMnemonicKey(m)
+        const private_key = mk.privateKey.reduce((a, b) => a + b);
         localStorage.setItem("address", wallet.key.accAddress);
+        localStorage.setItem("username", username);
+        localStorage.setItem("private_key", private_key.toString());
         localStorage.setItem("mnemonic", mk.mnemonic);
     }
 

@@ -15,6 +15,8 @@ import "./AddFriends.css";
 import { globalEmitter } from "../../helpers/emitter";
 import { LCDClient, Coin, MnemonicKey } from "@terra-money/terra.js";
 import logo from "../homepage/logo.svg";
+import { sendFriendRequest  } from '../../helpers/network';
+import {useHistory} from "react-router-dom";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
@@ -25,8 +27,8 @@ const terra = new LCDClient({
 });
 
 export const AddFriends: React.FunctionComponent = () => {
-
-  const [friendUsername, setFriendUsername] = useState<string>("")
+  const history = useHistory();
+  const [friendUsername, setFriendUsername] = useState<string>("");
 
   const onChangeUsername = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
     if (newValue) {
@@ -36,9 +38,15 @@ export const AddFriends: React.FunctionComponent = () => {
     }
   }
 
-  const sendFriendRequest = () => {
+  const handleFriendRequest = () => {
     if(friendUsername != ""){
-
+      const local_key = localStorage.getItem("private_key");
+      const username = localStorage.getItem("username");
+        if(!username || !local_key){
+          history.push('/');
+          return;
+        }
+        sendFriendRequest(username, friendUsername, parseInt(local_key));
     }
     else{
       globalEmitter.emit("notification", { type: "error", message: "Please enter a valid username to send a friend request to." })
@@ -51,7 +59,7 @@ export const AddFriends: React.FunctionComponent = () => {
         Please enter your friend's username:
       </Text>
       <TextField label="Username" onChange={onChangeUsername} />
-      <PrimaryButton onClick={sendFriendRequest}>Send request</PrimaryButton>
+      <PrimaryButton onClick={handleFriendRequest}>Send request</PrimaryButton>
     </Stack>
   );
 };
