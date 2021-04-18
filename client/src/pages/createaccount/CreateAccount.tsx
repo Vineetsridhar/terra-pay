@@ -21,6 +21,7 @@ export default function CreateAccount() {
     const [username, setUsername] = useState<string>("")
 
     const [mnemonicKey, setMnemonicKey] = useState<string>("")
+    const bigInt = require("big-integer");
 
     const onChangeName = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
         if (newValue) {
@@ -49,8 +50,11 @@ export default function CreateAccount() {
         localStorage.setItem("mnemonic", mk.mnemonic);
         const base = await getBaseNumber();
         const prime = await getPrimeNumber();
-        const public_key = Math.pow(base, private_key)%prime;
-        return public_key;
+        console.log(private_key);
+        console.log(base.value);
+        console.log(prime.value);
+        const public_key = bigInt(base.value).modPow(private_key, prime.value);
+        return parseInt(public_key.toString());
     }
 
     const submit = async () => {
