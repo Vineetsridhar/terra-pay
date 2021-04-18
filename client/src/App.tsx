@@ -5,6 +5,7 @@ import { Dashboard } from "./pages/dashboard/Dashboard";
 import "./App.css";
 import CreateAccount from "./pages/createaccount/CreateAccount";
 import { ImportAccount } from "./pages/importaccount/ImportAccount";
+import { AddFriends } from "./pages/addfriends/AddFriends";
 
 function Home() {
   return <h2>Home</h2>;
@@ -29,6 +30,9 @@ export const App: React.FunctionComponent = () => {
         </Route>
         <Route path="/users">
           <Users />
+        </Route>
+        <Route path="/addFriends">
+          <AddFriends />
         </Route>
         <Route path="/">
           <HomePage />
