@@ -18,7 +18,7 @@ cur = con.cursor()
 
 cur.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(32), username VARCHAR(32));')
 cur.execute('CREATE TABLE IF NOT EXISTS friend_request (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), value INTEGER);')
-cur.execute('CREATE TABLE IF NOT EXISTS friend_response (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), address: VARCHAR(255), value INTEGER);')
+cur.execute('CREATE TABLE IF NOT EXISTS friend_response (id INTEGER PRIMARY KEY AUTOINCREMENT, sender VARCHAR(32), recipient VARCHAR(32), address VARCHAR(255), value INTEGER);')
 
 load_dotenv(find_dotenv())  
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
@@ -36,7 +36,7 @@ def make_error_block(message):
 def getBaseNumber():
     return {"success":True, "value": 101}
 
-@APP.route('/getBaseNumber', methods=['POST'])
+@APP.route('/getPrimeNumber', methods=['POST'])
 @cross_origin() 
 def getPrimeNumber():
     return {"success":True, "value": 5003}
@@ -49,7 +49,7 @@ def getAllFriendRequests():
         return make_error_block("Params missing")
     items = cur.execute("SELECT * FROM friend_request WHERE recipient='%s'" % data["username"])
     output = [value for value in items]
-    return {"success":True, requests:output}
+    return {"success":True, "requests":output}
 
 @APP.route('/initiateRequest', methods=['POST'])
 @cross_origin() 
@@ -57,6 +57,10 @@ def initiateRequest():
     data = request.json
     if "sender" not in data or "recipient" not in data or "value" not in data:
         return make_error_block("Params missing")
+    find = cur.execute('SELECT * FROM friend_request WHERE sender="%s" and recipient="%s";' %  (data["sender"], data["recipient"]))
+    values = [item for item in find]
+    if len(values) > 0:
+        return make_error_block("You can only have one outgoing friend request")
 
     cur.execute('INSERT INTO friend_request (sender, recipient, value) VALUES ("%s", "%s", "%s")' % (data["sender"], data["recipient"], data["value"]))
     con.commit()
@@ -69,7 +73,7 @@ def sendResponse():
     data = request.json
     if "sender" not in data or "recipient" not in data or "value" not in data or "address" not in data:
         return make_error_block("Params missing")
-
+    cur.execute('DELETE FROM friend_request WHERE sender="%s" and recipient="%s"', (data["sender"], data["recipient"]))
     cur.execute('INSERT INTO friend_response (sender, recipient, value, address) VALUES ("%s", "%s", "%s")' % (data["sender"], data["recipient"], data["value"], data["address"]))
     con.commit()
 
