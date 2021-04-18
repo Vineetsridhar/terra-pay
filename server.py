@@ -73,7 +73,7 @@ def initiateRequest():
     find = cur.execute('SELECT * FROM friend_request WHERE sender="%s" and recipient="%s";' %  (data["sender"], data["recipient"]))
     values = [item for item in find]
     if len(values) > 0:
-        return make_error_block("You can only have one outgoing friend request")
+        return make_error_block("You can only have one outgoing friend request.")
 
     cur.execute('INSERT INTO friend_request (sender, recipient, address, response) VALUES ("%s", "%s", "%s", 0)' % (data["sender"], data["recipient"], data["address"]))
     con.commit()

@@ -70,7 +70,6 @@ export const AddFriends: React.FunctionComponent = () => {
     if (!private_key) {
       return
     }
-
     const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
     return CryptoJS.AES.decrypt(address, shared.toString()).toString(CryptoJS.enc.Utf8);
   }
@@ -88,14 +87,17 @@ export const AddFriends: React.FunctionComponent = () => {
         globalEmitter.emit("notification", { type: "error", message: "The username you have input is invalid." });
         return;
       }
-      const prime = await getPrimeNumber();
       // Calculate shared secret
+      const prime = await getPrimeNumber();
       const shared = bigInt(friendsPublicKey.publicKey).modPow(parseInt(private_key), prime.value);
 
+      // Encrypt terra address
       const terraAddress = localStorage.getItem("address");
       const encryptedTerraAddress = CryptoJS.AES.encrypt(terraAddress, shared.toString()).toString();
-      //console.log(encryptedTerraAddress);
-      sendFriendRequest(username, friendUsername, encryptedTerraAddress);
+      const result = await sendFriendRequest(username, friendUsername, encryptedTerraAddress);
+      if(result.success === false){
+        globalEmitter.emit("notification", { type: "error", message: result.message });
+      }
       setFriendUsername("")
     }
     else {
