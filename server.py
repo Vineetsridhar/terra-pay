@@ -12,6 +12,7 @@ from flask import Flask, send_from_directory, request
 from dotenv import load_dotenv, find_dotenv
 from flask_cors import cross_origin
 import sqlite3
+import json
 
 con = sqlite3.connect('users.db', check_same_thread=False)
 cur = con.cursor()
@@ -171,9 +172,15 @@ def handle_stripe_payment():
     )
     try:
         # Send publishable key and PaymentIntent details to client
-        return {'publishableKey': os.getenv('STRIPE_PUBLISHABLE_KEY'), 'clientSecret': intent.client_secret}
+        return {'clientSecret': intent.client_secret}
     except Exception as e:
         return { 'success': False }, 403
+
+@APP.route('/getPoolAddress', methods=['POST'])
+@cross_origin() 
+def getPoolAddress():
+    return {'success': True, "address":"terra15hqeyv7k7zsffd3tefndep20qqz47tusfqd3u4"}, 200
+
 
 
 # Note we need to add this line so we can import app in the python shell

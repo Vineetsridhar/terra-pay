@@ -25,6 +25,7 @@ import { AddFunds } from "../addfunds/AddFunds";
 import { AddFriends } from "../addfriends/AddFriends";
 import { SendMoney } from "../sendMoney/SendMoney";
 import { globalStyles } from "../../assets/styles";
+import { WithdrawFunds } from "../withdrawfunds/WithdrawFunds";
 
 const boldStyle = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 1 };
@@ -86,7 +87,7 @@ export const Dashboard: React.FunctionComponent = () => {
               textAlign: "center",
             },
           }}
-          // tokens={stackTokens}
+        // tokens={stackTokens}
         >
           <img className="App-logo" src={logo} alt="logo" />
           <Text
@@ -119,6 +120,23 @@ export const Dashboard: React.FunctionComponent = () => {
             }}
           >
             Deposit Funds
+          </div>
+          <div
+            className="navBarButton"
+            style={{
+              height: "6%",
+              width: "95%",
+              fontSize: "1.55em",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: globalStyles.colors.text,
+            }}
+            onClick={() => {
+              history.push("/dashboard/withdraw");
+            }}
+          >
+            Withdraw Funds
           </div>
           <div
             className="navBarButton"
@@ -177,6 +195,10 @@ export const Dashboard: React.FunctionComponent = () => {
       <Stack.Item></Stack.Item>
       <Stack.Item grow>
         <Switch>
+          <Route path={`${path}/withdraw`}>
+            <WithdrawFunds />
+          </Route>
+
           <Route path={`${path}/addFriends`}>
             <AddFriends />
           </Route>

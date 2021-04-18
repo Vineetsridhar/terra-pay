@@ -3,5 +3,5 @@ import { CheckoutForm } from "./CheckoutForm";
 import "./AddFunds.css";
 
 export function AddFunds() {
-  return <CheckoutForm />;
+  return <CheckoutForm deposit={true} callback={null}/>;
 }

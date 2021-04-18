@@ -8,8 +8,10 @@ import {
 import { PrimaryButton, Stack, Text, TextField } from "office-ui-fabric-react";
 import { globalEmitter } from "../../helpers/emitter";
 import { fundAccount, getPaymentIntent } from "../../helpers/network";
-import {useHistory} from 'react-router-dom';
-export const CheckoutForm = () => {
+import { useHistory } from 'react-router-dom';
+
+export const CheckoutForm = ({ deposit, callback }) => {
+  console.log(deposit)
   const history = useHistory();
   const stripe = useStripe();
   const elements = useElements();
@@ -73,6 +75,7 @@ export const CheckoutForm = () => {
       type: "card",
       card: elements.getElement(CardElement),
     });
+    console.log(paymentMethod)
     const client_secret = await getPaymentIntent(
       amountValidated,
       paymentMethod
@@ -109,6 +112,16 @@ export const CheckoutForm = () => {
       }
     }
   };
+
+  const onClickWithdraw = async () => {
+    callback(amountValidated).then(() => {
+      globalEmitter.emit("notification", {
+        type: "success",
+        message: "Money will be deposited into your account in 1-2 business days",
+      });
+      history.push('/dashboard/sendMoney')
+    })
+  }
 
   return (
     <>
@@ -158,8 +171,9 @@ export const CheckoutForm = () => {
                   }}
                   style={{ border: "2px solid red" }}
                 />
+                <br />
                 <PrimaryButton
-                  onClick={onClickPay}
+                  onClick={deposit ? onClickPay : onClickWithdraw}
                   disabled={!(stripe || elements)}
                 >
                   Submit
@@ -169,11 +183,11 @@ export const CheckoutForm = () => {
           </>
         ) : (
           <>
-            <Text variant="xxLarge">Deposit Funds</Text>
+            <Text variant="xxLarge">{deposit ? "Deposit" : "Withdraw"} Funds</Text>
 
             <Stack horizontal>
               <TextField
-                placeholder="Amount to deposit"
+                placeholder={`Amount to ${deposit ? "deposit" : "withdraw"}`}
                 value={amount}
                 onChange={onChangeAmount}
                 styles={{
