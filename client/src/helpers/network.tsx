@@ -40,3 +40,13 @@ export async function fundAccount(amount:number, address:string){
     const endpoint = getEndpoint('fund');
     return makeCall(endpoint, {amount, address}).then(response => response.json());
 }
+
+export async function getBaseNumber(){
+    const endpoint = getEndpoint('getBaseNumber');
+    return makeCall(endpoint, {}).then(response => response.json());
+}
+
+export async function getPrimeNumber(){
+    const endpoint = getEndpoint('getPrimeNumber');
+    return makeCall(endpoint, {}).then(response => response.json());
+}
