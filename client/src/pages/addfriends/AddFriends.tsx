@@ -79,12 +79,12 @@ export const AddFriends: React.FunctionComponent = () => {
     const username = localStorage.getItem("username");
     if (!username || !private_key) {
       history.push('/');
-      return;
+      return -1;
     }
     const friendsPublicKey = await getPublicKey(friendUsername);
     if (!friendsPublicKey.publicKey) {
       globalEmitter.emit("notification", { type: "error", message: "The username you have input is invalid." });
-      return;
+      return -1;
     }
     const prime = await getPrimeNumber();
     // Calculate shared secret
@@ -94,6 +94,9 @@ export const AddFriends: React.FunctionComponent = () => {
   const handleFriendRequest = async () => {
     if (friendUsername != "") {
       const shared = await getSharedKey(friendUsername)
+      if (shared == -1) {
+        return
+      }
       const terraAddress = localStorage.getItem("address");
       const encryptedTerraAddress = CryptoJS.AES.encrypt(terraAddress, shared.toString()).toString();
       const username = localStorage.getItem("username");
@@ -101,7 +104,9 @@ export const AddFriends: React.FunctionComponent = () => {
       const result = await sendFriendRequest(username!!, friendUsername, encryptedTerraAddress);
       if (result.success === false) {
         globalEmitter.emit("notification", { type: "error", message: result.message });
-      } 
+      } else {
+        globalEmitter.emit("notification", { type: "success", message: "Request sent" });
+      }
       setFriendUsername("")
     }
     else {
@@ -113,8 +118,12 @@ export const AddFriends: React.FunctionComponent = () => {
     const shared = await getSharedKey(recipient)
     sendResponse(sender, recipient, shared);
     const friends = JSON.parse(localStorage.getItem("friends") ?? "[]")
-    friends.push({ username: sender, address: decryptedAddress });
+    friends.push({ username: recipient, address: decryptedAddress });
+    console.log(friends)
     localStorage.setItem("friends", JSON.stringify(friends))
+
+    const output = allRequests.filter(item => item.sender !== recipient)
+    setAllRequests(output)
   }
 
   const rejectFriendRequest = async (sender: string, recipient: string) => {
@@ -125,16 +134,28 @@ export const AddFriends: React.FunctionComponent = () => {
 
   return (
     <Stack>
+      <Text variant="small" styles={boldStyle}>
+        Your address: {localStorage.getItem("address")}
+      </Text>
       <Text variant="xxLarge" styles={boldStyle}>
         Please enter your friend's username:
       </Text>
-      <TextField label="Username" onChange={onChangeUsername} />
+      <TextField label="Username" value={friendUsername} onChange={onChangeUsername} />
       <PrimaryButton onClick={handleFriendRequest}>Send request</PrimaryButton>
       {allRequests.map(req => (
         <div>
           {`${req.sender} ${req.decryptedAddress}`}
           <PrimaryButton onClick={() => acceptFriendRequest(req.recipient, req.sender, req.decryptedAddress)}>Accept</PrimaryButton>
           <DefaultButton onClick={() => rejectFriendRequest(req.sender, req.recipient)}>Reject</DefaultButton>
+        </div>
+      ))}
+      <Text variant="xxLarge" styles={boldStyle}>
+        Your friends
+      </Text>
+      {JSON.parse(localStorage.getItem("friends") ?? "[]").map((friends:{username:string, address:string}) => (
+        <div>
+          {friends.username}
+          {friends.address}
         </div>
       ))}
     </Stack>
