@@ -148,7 +148,20 @@ export const History: React.FunctionComponent = () => {
         }}
         tokens={stackTokens}
       >
-        <Stack.Item>
+        <Stack.Item
+          styles={{
+            root: {
+              alignItems: "center",
+              display: "flex",
+              justifyContent: "center",
+
+              width: "100%",
+              overflow: "hidden",
+              height: "100%",
+              fontFamily: "inherit",
+            },
+          }}
+        >
           <Stack
             styles={{
               root: {
@@ -163,8 +176,150 @@ export const History: React.FunctionComponent = () => {
               },
             }}
           >
+            <Stack
+              styles={{
+                root: {
+                  alignItems: "flex-end",
+                  display: "flex",
+                  justifyContent: "center",
+
+                  width: "100%",
+                  overflow: "hidden",
+                  height: "60%",
+                  fontFamily: "inherit",
+                },
+              }}
+            >
+              <Text variant="xxLarge" styles={boldStyle}>
+                You Sent
+              </Text>
+              <Stack.Item
+                disableShrink
+                styles={{
+                  root: {
+                    alignItems: "center",
+                    display: "flex",
+                    justifyContent: "center",
+
+                    width: "70%",
+                    overflow: "hidden",
+                    padding: "50px",
+                    height: "75%",
+                    border: `4px solid ${globalStyles.colors.emphasis}`,
+                    borderRadius: 10,
+                    borderTopLeftRadius: 50,
+                    borderBottomLeftRadius: 50,
+                    fontFamily: "inherit",
+                  },
+                }}
+              >
+                <Scrollbars autoHeight autoHeightMin={200}>
+                  <Stack
+                    styles={{
+                      root: {
+                        alignItems: "center",
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        overflow: "hidden",
+                        height: "75%",
+                      },
+                    }}
+                  >
+                    {outgoing.map(
+                      (transaction: {
+                        username: string;
+                        amount: number;
+                        message: string;
+                      }) => (
+                        <Stack.Item
+                          styles={{
+                            root: {
+                              padding: 5,
+                            },
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "250px",
+                              border: `2px solid ${globalStyles.colors.emphasis}`,
+                              boxShadow: "0 0 2px #9ecaed",
+                              borderRadius: 10,
+                              borderTopLeftRadius: 30,
+                              borderBottomLeftRadius: 30,
+                              overflow: "hidden",
+                              backgroundColor: "white",
+                            }}
+                          >
+                            <Persona
+                              text={transaction.username}
+                              secondaryText={`$${transaction.amount} - ${transaction.message}`}
+                              size={PersonaSize.size56}
+                              styles={{
+                                root: {
+                                  backgroundColor:
+                                    globalStyles.colors.background2,
+                                  borderWidth: 2,
+                                  borderRadius: 2,
+                                  padding: 2,
+                                },
+                                primaryText: {
+                                  color: globalStyles.colors.text,
+                                },
+                                secondaryText: {
+                                  color: globalStyles.colors.text,
+                                },
+                              }}
+                            />
+                          </div>
+                        </Stack.Item>
+                      )
+                    )}
+                    {outgoing.length == 0 && (
+                      <Text
+                        variant="large"
+                        styles={{
+                          root: { textAlign: "center", paddingTop: 16 },
+                        }}
+                      >
+                        No Transactions
+                      </Text>
+                    )}
+                  </Stack>
+                </Scrollbars>
+              </Stack.Item>
+            </Stack>
+          </Stack>
+        </Stack.Item>
+        <Stack.Item
+          styles={{
+            root: {
+              alignItems: "center",
+              display: "flex",
+              justifyContent: "center",
+
+              width: "100%",
+              overflow: "hidden",
+              height: "100%",
+              fontFamily: "inherit",
+            },
+          }}
+        >
+          <Stack
+            styles={{
+              root: {
+                alignItems: "flex-end",
+                display: "flex",
+                justifyContent: "center",
+
+                width: "100%",
+                overflow: "hidden",
+                height: "60%",
+                fontFamily: "inherit",
+              },
+            }}
+          >
             <Text variant="xxLarge" styles={boldStyle}>
-              You Sent
+              You Received
             </Text>
             <Stack.Item
               disableShrink
@@ -172,16 +327,16 @@ export const History: React.FunctionComponent = () => {
                 root: {
                   alignItems: "center",
                   display: "flex",
-                  justifyContent: "center",
+                  justifyContent: "flex-end",
 
-                  width: "70%",
+                  width: "75%",
                   overflow: "hidden",
                   padding: "50px",
                   height: "75%",
                   border: `4px solid ${globalStyles.colors.emphasis}`,
                   borderRadius: 10,
-                  borderTopLeftRadius: 50,
-                  borderBottomLeftRadius: 50,
+                  borderTopRightRadius: 50,
+                  borderBottomRightRadius: 50,
                   fontFamily: "inherit",
                 },
               }}
@@ -198,7 +353,7 @@ export const History: React.FunctionComponent = () => {
                     },
                   }}
                 >
-                  {outgoing.map(
+                  {incoming.map(
                     (transaction: {
                       username: string;
                       amount: number;
@@ -259,102 +414,6 @@ export const History: React.FunctionComponent = () => {
               </Scrollbars>
             </Stack.Item>
           </Stack>
-        </Stack.Item>
-        <Stack.Item>
-          <Text variant="xxLarge" styles={boldStyle}>
-            You Received
-          </Text>
-          <Stack.Item
-            disableShrink
-            styles={{
-              root: {
-                alignItems: "center",
-                display: "flex",
-                justifyContent: "flex-end",
-
-                width: "75%",
-                overflow: "hidden",
-                padding: "50px",
-                height: "75%",
-                border: `4px solid ${globalStyles.colors.emphasis}`,
-                borderRadius: 10,
-                borderTopRightRadius: 50,
-                borderBottomRightRadius: 50,
-                fontFamily: "inherit",
-              },
-            }}
-          >
-            <Scrollbars autoHeight autoHeightMin={200}>
-              <Stack
-                styles={{
-                  root: {
-                    alignItems: "center",
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    overflow: "hidden",
-                    height: "75%",
-                  },
-                }}
-              >
-                {incoming.map(
-                  (transaction: {
-                    username: string;
-                    amount: number;
-                    message: string;
-                  }) => (
-                    <Stack.Item
-                      styles={{
-                        root: {
-                          padding: 5,
-                        },
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "250px",
-                          border: `2px solid ${globalStyles.colors.emphasis}`,
-                          boxShadow: "0 0 2px #9ecaed",
-                          borderRadius: 10,
-                          borderTopLeftRadius: 30,
-                          borderBottomLeftRadius: 30,
-                          overflow: "hidden",
-                          backgroundColor: "white",
-                        }}
-                      >
-                        <Persona
-                          text={transaction.username}
-                          secondaryText={`$${transaction.amount} - ${transaction.message}`}
-                          size={PersonaSize.size56}
-                          styles={{
-                            root: {
-                              backgroundColor: globalStyles.colors.background2,
-                              borderWidth: 2,
-                              borderRadius: 2,
-                              padding: 2,
-                            },
-                            primaryText: {
-                              color: globalStyles.colors.text,
-                            },
-                            secondaryText: {
-                              color: globalStyles.colors.text,
-                            },
-                          }}
-                        />
-                      </div>
-                    </Stack.Item>
-                  )
-                )}
-                {outgoing.length == 0 && (
-                  <Text
-                    variant="large"
-                    styles={{ root: { textAlign: "center", paddingTop: 16 } }}
-                  >
-                    No Transactions
-                  </Text>
-                )}
-              </Stack>
-            </Scrollbars>
-          </Stack.Item>
         </Stack.Item>
       </Stack>
       <Stack.Item style={{ marginTop: "auto" }}>
